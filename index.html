@@ -4,6 +4,7 @@
 <meta property="og:title" content="PULSE · RESCENE 4th Mini Album"><meta property="og:description" content="발매 카운트다운 · 구매 가이드 · 컴백 일정">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Italiana&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>
+.nv{position:sticky;top:0;z-index:50;display:flex;gap:4px 14px;flex-wrap:wrap;align-items:center;justify-content:center;padding:10px max(16px,env(safe-area-inset-left,0px));background:rgba(28,39,51,.92);backdrop-filter:blur(8px);font:700 13px 'Noto Sans KR',sans-serif}.nv a{color:#dfe7ec;text-decoration:none}.nv .nv-l{font:400 18px Italiana,serif;letter-spacing:.08em;color:#fff;margin-right:auto}
 :root{--bg:#eef2f5;--paper:#fff;--ink:#1c2733;--ink2:#4f6070;--mut:#8796a3;--slate:#5b7c86;--deep:#24333f;--line:#d9e1e7;--silver1:#f7f9fb;--silver2:#b9c6cf;--hot:#d6456a;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161c;--paper:#17212a;--ink:#e8eef2;--ink2:#b5c3cd;--mut:#7f8f9b;--line:#26333d;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#0f161c;--paper:#17212a;--ink:#e8eef2;--ink2:#b5c3cd;--mut:#7f8f9b;--line:#26333d;color-scheme:dark}
@@ -13,7 +14,7 @@ a{color:inherit}
 .g{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
 .wrap{max-width:1080px;margin:0 auto}
 /* HERO */
-.hero{position:relative;min-height:100svh;color:#fff;overflow:hidden;background:radial-gradient(120% 90% at 80% 10%,#6f8b97 0%,#3a5260 38%,#1c2733 72%,#121a21 100%);display:flex;align-items:center}
+.hero{position:relative;min-height:calc(100svh - 44px);color:#fff;overflow:hidden;background:radial-gradient(120% 90% at 80% 10%,#6f8b97 0%,#3a5260 38%,#1c2733 72%,#121a21 100%);display:flex;align-items:center}
 .hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 80px);pointer-events:none}
 .spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff;opacity:.0;animation:tw 4s infinite}
 @keyframes tw{0%,100%{opacity:0}50%{opacity:.9}}
@@ -72,6 +73,7 @@ footer b{font:400 26px Italiana,serif;color:var(--ink);letter-spacing:.06em}
 .cover{order:-1;width:min(260px,64vw)}.cards{grid-template-columns:1fr}.nx strong{margin-left:0}.cd div{min-width:66px}.cd b{font-size:32px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
+<nav class="nv"><a class="nv-l" href="./">Pulse</a><a href="rescene.html">리센느</a><a href="albums.html">앨범</a><a href="songs.html">곡</a><a href="play.html">플레이어</a><a href="guide.html">구매 가이드</a><a href="combo.html">조합</a></nav>
 <header class="hero"><div class="sparks" id="sparks"></div>
 <div class="wrap g">
 <div><div class="eyebrow">RESCENE · THE 4TH MINI ALBUM</div>
@@ -89,6 +91,9 @@ footer b{font:400 26px Italiana,serif;color:var(--ink);letter-spacing:.06em}
 <a class="c dark" href="guide.html"><i>01</i><b>구매 가이드</b><span>판매처 17곳 가격 비교 · 미공포 특전 · 공구 · 사람별 추천 조합까지 한 페이지에</span><u>가이드 열기 →</u></a>
 <a class="c" href="combo.html"><i>02</i><b>조합 한 번에 열기</b><span>“Standard 1 + QR 2” 같은 추천 조합의 상품 페이지를 버튼 하나로 전부 열어 줘요</span><u>바로가기 →</u></a>
 <a class="c" href="guide.html#s11"><i>03</i><b>특전 포카 전부 받기</b><span>판매처 단독 포카를 다 모으는 장바구니와 받는 카드 총정리</span><u>장바구니 보기 →</u></a>
+<a class="c" href="rescene.html"><i>04</i><b>리센느 소개</b><span>멤버 · 프로필 · 그룹명의 뜻 · 데뷔부터 PULSE까지 타임라인</span><u>리센느 →</u></a>
+<a class="c" href="albums.html"><i>05</i><b>앨범</b><span>싱글 2장 · 미니 4장 · 수록곡 전부와 초동 판매량 · 싱글 · OST</span><u>앨범 →</u></a>
+<a class="c" href="songs.html"><i>06</i><b>곡 리스트</b><span>전곡 리스트와 공식 MV 조회수 순위</span><u>곡 →</u></a>
 </div></section>
 
 <section class="wrap g reveal"><div class="kick">COMEBACK SCHEDULE</div><h2>Countdown to Pulse<small>지난 일정은 흐리게 · 다음 일정은 강조</small></h2>
