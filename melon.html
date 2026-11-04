@@ -31,6 +31,20 @@
   --pos: #e66767; --neg: #3987e5; --good: #199e70;
   --s0: #3987e5; --s1: #d95926; --s2: #199e70; --s3: #c98500; --s4: #d55181; --s5: #008300; --s6: #9085e9; --s7: #e66767;
 }
+:root {
+  --tl: #d5d4cd; --bh: #efeee9; --r1: #fbf4d3; --r2: #f3e19a; --r3: #f5c994; --rx: #f8ebeb; --pk: #dcefc8;
+  --night: #e9e9e6; --pred: #efecfb; --predline: #6250d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --tl: #3b3b38; --bh: #232322; --r1: #3a3520; --r2: #574a17; --r3: #5a3a1a; --rx: #3b2a2b; --pk: #1e3a22;
+    --night: #252524; --pred: #25213f; --predline: #9085e9;
+  }
+}
+:root[data-theme="dark"] {
+  --tl: #3b3b38; --bh: #232322; --r1: #3a3520; --r2: #574a17; --r3: #5a3a1a; --rx: #3b2a2b; --pk: #1e3a22;
+  --night: #252524; --pred: #25213f; --predline: #9085e9;
+}
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body { background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; font-size: 15px; line-height: 1.55; -webkit-text-size-adjust: 100%; }
@@ -40,23 +54,55 @@ h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
 .lede { color: var(--ink-2); margin: 0 0 16px; font-size: 14px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
 .sub { color: var(--ink-2); font-size: 13.5px; margin: 0 0 10px; }
-.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; margin-bottom: 14px; }
-.song { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-.song .nm { display: flex; align-items: center; gap: 8px; font-weight: 650; }
-.song .nm i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.song .ar { color: var(--muted); font-size: 12.5px; margin-left: 18px; }
-.song .now { color: var(--ink-2); font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; }
-.song .lb { color: var(--ink-2); font-size: 12.5px; margin-top: 8px; }
-.song .big { font-size: 30px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
-.song .big small { font-size: 14px; font-weight: 550; margin-left: 6px; }
-.song .rg { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
-.song .more { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.song .more b { color: var(--ink); font-weight: 650; }
 .five { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
 .five .t { font-size: 12px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
 .five svg { display: block; width: 100%; height: 46px; overflow: visible; }
 .up { color: var(--pos); } .down { color: var(--neg); }
 .tag { display: inline-block; font-size: 11.5px; color: var(--ink-2); border: 1px solid var(--border); border-radius: 5px; padding: 0 6px; margin-left: 6px; font-weight: 500; }
+.guide { color: var(--ink-2); font-size: 13px; margin: -6px 0 12px; }
+.guide b { color: var(--ink); font-weight: 650; }
+.guide i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin: 0 3px 0 1px; }
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(286px, 1fr)); gap: 12px; margin-bottom: 14px; align-items: start; }
+.bp { background: var(--surface); border: 1px solid var(--tl); border-radius: 8px; overflow: hidden; }
+.bp .bh { padding: 11px 10px 9px; text-align: center; border-bottom: 1px solid var(--tl); }
+.bp .bt { font-size: 16px; font-weight: 700; line-height: 1.3; word-break: keep-all; }
+.bp .ba { font-size: 12.5px; color: var(--ink-2); margin-top: 1px; }
+.bp.rs .bh { background: #1c2733; border-bottom-color: #1c2733; }
+.bp.rs .bt { color: #fff; } .bp.rs .ba { color: #c5d0d9; }
+table.b5 { table-layout: fixed; font-size: 13.5px; }
+table.b5 th, table.b5 td { text-align: center; padding: 3px 2px; height: 25px; border: 1px solid var(--tl); white-space: nowrap; overflow: hidden; }
+table.b5 tr > :first-child { border-left: 0; }
+table.b5 tr > :last-child { border-right: 0; }
+table.b5 tbody tr:last-child td { border-bottom: 0; }
+table.b5 tr.meta th { background: var(--bh); color: var(--ink); font-weight: 600; font-size: 13px; }
+table.b5 tr.cols th { color: var(--ink-2); font-weight: 600; font-size: 12.5px; }
+table.b5 td.t { color: var(--ink-2); }
+table.b5 td.d.up { color: var(--pos); }
+table.b5 td.d.down { color: var(--neg); }
+table.b5 tr.night td { background: var(--night); }
+table.b5 tr.pred td { background: var(--pred); border-top: 2px solid var(--predline); height: auto; padding: 5px 2px; }
+table.b5 tr.pred td.t b { display: block; color: var(--ink); font-weight: 650; line-height: 1.25; }
+table.b5 tr.pred td.u b { font-size: 15px; font-weight: 700; color: var(--ink); }
+table.b5 tr.pred td.u small { display: block; font-size: 10.5px; line-height: 1.3; color: var(--ink-2); white-space: normal; }
+table.b5 tr.pred td.d { font-weight: 650; }
+table.b5 tr td.r1 { background: var(--r1); }
+table.b5 tr td.r2 { background: var(--r2); }
+table.b5 tr td.r3 { background: var(--r3); }
+table.b5 tr td.rx { background: var(--rx); }
+table.b5 tr td.pk { background: var(--pk); }
+table.b5 tr.pred td.r.fr { box-shadow: inset 0 0 0 1px var(--predline); }
+.pill { display: inline-block; font-size: 10.5px; font-weight: 700; line-height: 16px; color: #fff; background: var(--predline); border-radius: 4px; padding: 0 5px; }
+.bx { display: none; width: 100%; padding: 8px 10px; font: inherit; font-size: 13px; color: var(--ink-2); background: transparent; border: 0; border-top: 1px solid var(--tl); cursor: pointer; }
+.bf { padding: 8px 10px 10px; border-top: 1px solid var(--tl); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.bf b { color: var(--ink); font-weight: 650; }
+.bf .five { margin-top: 6px; padding-top: 6px; }
+.bf .ahead { display: grid; grid-template-columns: 1fr auto auto; gap: 1px 12px; align-items: baseline; }
+.bf .ahead b, .bf .ahead .dq { text-align: right; }
+.bf .ahead .dq { min-width: 54px; }
+@media (max-width: 640px) {
+  .bp:not(.all) tr.old { display: none; }
+  .bx { display: block; }
+}
 .chart { position: relative; width: 100%; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 svg text { font-family: inherit; fill: var(--muted); font-size: 11.5px; }
@@ -110,7 +156,6 @@ td { font-variant-numeric: tabular-nums; }
 .notes li + li { margin-top: 4px; }
 .nv{position:sticky;top:0;z-index:50;display:flex;gap:4px 14px;flex-wrap:wrap;align-items:center;justify-content:center;padding:10px max(16px,env(safe-area-inset-left,0px));background:rgba(28,39,51,.92);backdrop-filter:blur(8px);font:700 13px 'Noto Sans KR',sans-serif}.nv a{color:#dfe7ec;text-decoration:none}.nv a[aria-current]{color:#fff;border-bottom:2px solid #fff}.nv .nv-l{font:400 18px Italiana,serif;letter-spacing:.08em;color:#fff;margin-right:auto}
 .badge{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#1c2733;border-radius:5px;padding:1px 6px;margin-left:6px}
-.song.rs{border-color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -118,7 +163,8 @@ td { font-variant-numeric: tabular-nums; }
 <div class="wrap">
   <h1>멜론 다음 시간 예측</h1>
   <p class="lede" id="lede"></p>
-  <div class="grid3" id="cards"></div>
+  <p class="guide">차트봇 '이용자수 추이' 표와 같은 꼴이에요. <b>맨 아래 보라색 줄 = 다음 정각 예측</b> (큰 숫자 = 예측값, 작은 숫자 = 10번 중 8번 들어오는 범위, 순위 = 5분 차트로 본 예상 순위). <i style="background:var(--pk)"></i>최고 이용자수 · <i style="background:var(--night)"></i>새벽 2~6시</p>
+  <div class="board" id="board"></div>
 
   <section class="card">
     <h2>지난 48시간과 앞으로 24시간</h2>
@@ -162,48 +208,102 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   function niceStep(range) { const raw = range / 4; const p = Math.pow(10, Math.floor(Math.log10(raw || 1))); for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * p) return m * p; return 10 * p; }
 
   const isR = s => /RESCENE|리센느/.test(s.artist || '');
-  const S = D.songs.slice().sort((a, b) => (isR(b) - isR(a)) || (b.base - a.base));
+  const lastRank = s => { const r = s.hist.length ? s.hist[s.hist.length - 1][2] : null; return r == null ? 99 : r; };
+  const S = D.songs.slice().sort((a, b) => (isR(b) - isR(a)) || (lastRank(a) - lastRank(b)) || (b.base - a.base));   // 리센느 먼저, 그다음 지금 순위
   document.getElementById('lede').textContent =
     `${D.built} 갱신 · 자료 ${lab(D.latest)}까지 · 다음 정각 ${lab(D.next)}` + (D.five_minute != null ? ` · 5분 차트 ${D.five_posted.slice(11, 16)}까지 반영` : ' · 이번 시간 5분 차트는 아직 없음');
 
-  /* 곡 카드 */
-  const cards = document.getElementById('cards');
-  if (!S.length) cards.appendChild(h('div', 'empty', '지금 실시간 3위 안에 숫자가 있는 곡이 없어요.'));
+  /* 차트봇 '이용자수 추이' 표 꼴 — 곡마다 최근 25시간 + 맨 아래 다음 정각 예측 줄 */
+  const WK = '일월화수목금토';
+  const dlab = t => `${t.slice(0, 4)}.${t.slice(5, 7)}.${t.slice(8, 10)}(${WK[new Date(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10)).getDay()]})`;
+  const rc = v => v == null ? '' : v <= 1 ? 'r1' : v === 2 ? 'r2' : v === 3 ? 'r3' : 'rx';
+  const dcls = d => d > 0 ? ' up' : d < 0 ? ' down' : '';
+  const board = document.getElementById('board');
+  if (!S.length) board.appendChild(h('div', 'empty', '지금 실시간 3위 안에 숫자가 있는 곡이 없어요.'));
   S.forEach(s => {
-    const c = h('div', 'song');
-    if (isR(s)) c.classList.add('rs');
-    const nm = h('div', 'nm'); const dot = h('i'); dot.style.background = col(s); nm.append(dot, document.createTextNode(s.title));
-    if (isR(s)) nm.appendChild(h('span', 'badge', 'RESCENE'));
-    if (s.how === 'keep') nm.appendChild(h('span', 'tag', '24시간 전 값 없음 · 그대로'));
-    c.append(nm, h('div', 'ar', s.artist));
-    c.appendChild(h('div', 'now', `지금 ${lab(s.base_t)} ${fmt(s.base)}`));
+    const all = s.hist.slice(-26);                     // 맨 앞 한 줄은 첫 줄 증감 계산에만 씀(표엔 25시간)
+    const rows = all.slice(1);
+    while (rows.length && rows[0][1] == null && rows[0][2] == null && rows[0][3] == null) rows.shift();   // 새 곡: 나오기 전 시간은 뺌
+    const p = h('div', 'bp' + (isR(s) ? ' rs' : ''));
+    const bh = h('div', 'bh'); bh.append(h('div', 'bt', s.title), h('div', 'ba', s.artist || '')); p.appendChild(bh);
+    const tb = h('table', 'b5');
+    const cg = document.createElement('colgroup');
+    [15, 12, 13, 32, 28].forEach(w => { const c = document.createElement('col'); c.style.width = w + '%'; cg.appendChild(c); });
+    tb.appendChild(cg);
     const n1 = s.path[0];
-    c.appendChild(h('div', 'lb', `다음 정각 ${lab(n1.t)} 예측`));
-    const big = h('div', 'big', fmt(n1.med)); const d = n1.med - s.base;
-    const sm = h('small', d > 0 ? 'up' : d < 0 ? 'down' : '', sgn(d)); big.appendChild(sm); c.appendChild(big);
-    if (n1.lo != null) c.appendChild(h('div', 'rg', `10번 중 8번 범위 ${fmt(n1.lo)} ~ ${fmt(n1.hi)}`));
-    const more = h('div', 'more');
-    [[3, '3시간 뒤'], [24, '내일 이 시각']].forEach(([k, name]) => {
-      const p = s.path[k - 1]; if (!p) return;
-      const sp = h('span', null, name + ' '); sp.appendChild(h('b', null, fmt(p.med))); sp.appendChild(document.createTextNode(' ' + sgn(p.med - s.base))); more.appendChild(sp);
+    const thd = document.createElement('thead');
+    const addTh = (cls, cells) => { const r = document.createElement('tr'); r.className = cls; cells.forEach(([x, span]) => { const c = h('th', null, x); if (span) c.colSpan = span; r.appendChild(c); }); thd.appendChild(r); };
+    addTh('meta', [[`최고 이용자수 : ${fmt(s.peak != null ? s.peak : s.base)}`, 5]]);
+    addTh('meta', [[`${dlab(rows.length ? rows[0][0] : s.base_t)} ~ ${dlab(n1 ? n1.t : s.base_t)}`, 5]]);
+    addTh('cols', [['시간'], ['순위'], ['T100'], ['이용자수'], ['증감']]);
+    tb.appendChild(thd);
+    const tbd = document.createElement('tbody');
+    const cell = (tr, x, cls) => { const c = h('td', cls || null, x); tr.appendChild(c); return c; };
+    let prev = rows.length === 25 && all[0] && all[0][1] != null ? all[0][1] : null;   // 증감 = 마지막으로 보였던 값과의 차이(차트봇과 같게)
+    rows.forEach((r, i) => {
+      const t = r[0], u = r[1], rk = r[2], t1 = r[3], H = hr(t);
+      const tr = document.createElement('tr');
+      if (H >= 2 && H <= 6) tr.classList.add('night');
+      if (rows.length - i > 12) tr.classList.add('old');      // 휴대폰에선 최근 12시간만 먼저
+      cell(tr, `${H}시`, 't');
+      cell(tr, rk != null ? String(rk) : '', 'r ' + rc(rk));
+      cell(tr, t1 != null ? String(t1) : '', 'r ' + rc(t1));
+      cell(tr, u != null ? fmt(u) : '', 'u' + (u != null && u === s.peak ? ' pk' : ''));
+      const d = u != null && prev != null ? u - prev : null;
+      cell(tr, d != null ? sgn(d) : '', 'd' + (d != null ? dcls(d) : ''));
+      if (u != null) prev = u;
+      tbd.appendChild(tr);
     });
-    c.appendChild(more);
-    // 5분 차트 (이번 시간)
+    if (n1) {                                          // 다음 정각 예측 줄
+      const tr = document.createElement('tr'); tr.className = 'pred';
+      cell(tr, '', 't').append(h('b', null, `${hr(n1.t)}시`), h('span', 'pill', '예측'));
+      const fr = s.five && s.five.pred_rank;
+      const rcell = cell(tr, fr ? String(fr) : (D.five_minute != null ? '–' : ''), 'r' + (fr ? ' fr ' + rc(fr) : ''));
+      rcell.title = fr ? '5분 차트로 본 다음 정각 예상 순위' : (D.five_minute != null ? '이번 시간 5분 차트 3위 안에 없음' : '');
+      cell(tr, '', 'r');
+      const uc = cell(tr, '', 'u'); uc.appendChild(h('b', null, fmt(n1.med)));
+      if (n1.lo != null && n1.hi != null) { const sm = h('small'); sm.append(document.createTextNode(fmt(n1.lo) + '~'), document.createElement('wbr'), document.createTextNode(fmt(n1.hi))); uc.appendChild(sm); }
+      const d = n1.med - s.base;
+      cell(tr, sgn(d), 'd' + dcls(d));
+      tbd.appendChild(tr);
+    }
+    tb.appendChild(tbd);
+    p.appendChild(tb);
+    const nOld = rows.filter((_, i) => rows.length - i > 12).length;
+    if (nOld) {
+      const bx = h('button', 'bx', `앞 ${nOld}시간 더 보기 (25시간 표)`); bx.type = 'button';
+      bx.addEventListener('click', () => { p.classList.add('all'); bx.remove(); });
+      p.appendChild(bx);
+    }
+    const bf = h('div', 'bf');
+    const ln = h('div', 'ahead');
+    [[3, '3시간 뒤'], [24, '내일 이 시각']].forEach(([k, name]) => {
+      const q = s.path[k - 1]; if (!q) return;
+      const dq = q.med - s.base;
+      ln.append(h('span', null, `${name} (${hr(q.t)}시)`), h('b', null, fmt(q.med)), h('span', 'dq' + dcls(dq), sgn(dq)));
+    });
+    if (ln.childNodes.length) bf.appendChild(ln);
+    if (s.how === 'keep') bf.appendChild(h('div', null, '24시간 전 숫자가 없어 지금 값 그대로로 냈어요'));
     const fv = h('div', 'five');
     if (s.five && s.five.vals && s.five.vals.length) {
       const v = s.five.vals, last = v[v.length - 1];
-      const t = h('div', 't'); t.append(h('span', null, `이번 시간 5분 차트 · ${s.five.pred_rank}위 예측`), h('span', null, `${last.toFixed(2)} (${s.five.slope >= 0 ? '+' : '−'}${Math.abs(s.five.slope).toFixed(2)})`));
-      fv.appendChild(t);
-      const svg = el('svg', { viewBox: '0 0 240 46', preserveAspectRatio: 'none', role: 'img', 'aria-label': '이번 시간 5분 차트 값' }, fv);
-      const nz = v.filter(x => x > 0), lo = Math.min(...nz), hi2 = Math.max(...nz), X = i => 4 + i * 232 / 11, Y = x => 40 - (x - lo) / Math.max(1e-9, hi2 - lo) * 32;
+      fv.appendChild(h('div', 't', `5분 차트${D.five_posted ? ' ' + D.five_posted.slice(11, 16) + '까지' : ''} → 다음 정각 ${s.five.pred_rank}위 예상`));
+      const nz = v.filter(x => x > 0);
+      if (nz.length >= 3) {                          // 점이 몇 개 없을 땐(정각 막 지난 때) 선은 안 그림
+      const svg = el('svg', { viewBox: '0 0 240 46', preserveAspectRatio: 'none', role: 'img', 'aria-label': `이번 시간 5분 차트 값 — 마지막 ${last.toFixed(2)}` }, fv);
+      const lo = Math.min(...nz), hi2 = Math.max(...nz), X = i => 4 + i * 232 / 11, Y = x => 40 - (x - lo) / Math.max(1e-9, hi2 - lo) * 32;
       let dd = '', pen = false; v.forEach((x, i) => { if (!(x > 0)) { pen = false; return; } dd += (pen ? 'L' : 'M') + X(i) + ' ' + Y(x); pen = true; });
-      const p = el('path', { d: dd, fill: 'none', 'stroke-width': 2, 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }, svg); p.style.stroke = col(s);
-      const ci = v.length - 1; const cc = el('circle', { cx: X(ci), cy: Y(last), r: 3 }, svg); cc.style.fill = col(s);
+      const pp = el('path', { d: dd, fill: 'none', 'stroke-width': 2, 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }, svg); pp.style.stroke = col(s);
+      const cc = el('circle', { cx: X(v.length - 1), cy: Y(last), r: 3 }, svg); cc.style.fill = col(s);
+      }
+    } else if (D.five_minute != null) {
+      fv.appendChild(h('div', 't', '이번 시간 5분 차트 3위 안에 없어요 — 다음 정각 표엔 숫자가 안 나올 수 있어요'));
     } else {
-      fv.appendChild(h('div', 't', '이번 시간 5분 차트에 이 곡이 아직 없어요'));
+      fv.appendChild(h('div', 't', '이번 시간 5분 차트는 아직 없어요'));
     }
-    c.appendChild(fv);
-    cards.appendChild(c);
+    bf.appendChild(fv);
+    p.appendChild(bf);
+    board.appendChild(p);
   });
 
   /* 곡별 48시간 + 24시간 */
