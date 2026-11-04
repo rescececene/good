@@ -276,7 +276,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     bmKeys.sort((a, b) => (a === D.model ? -1 : b === D.model ? 1 : bm[a].mdae - bm[b].mdae)).forEach(m => {
       const x = bm[m], r = document.createElement('tr');
       const pair = m === D.model ? '실전' : (x.pair_n ? `${x.pair_m <= x.pair_prod ? '' : '+'}${Math.round((x.pair_m / Math.max(x.pair_prod, 1) - 1) * 100)}% (짝 ${x.pair_n}개 · ${fmt(x.pair_m)} 대 ${fmt(x.pair_prod)}명)` : '–');
-      [(MODEL_NAMES[m] || m) + (m === D.model ? ' · 실전' : ' · 그림자'), `${x.n}개`, `${fmt(x.mdae)}명`, pair, `${fmt(x.keep)}명`, x.cover != null ? `${x.cover}%` : '–'].forEach((v, i) => { const c = h('td', null, v); c.dataset.label = BMH[i]; r.appendChild(c); });
+      [(MODEL_NAMES[m] || m) + (m === D.model ? ' · 실전' : ' · 그림자'), `${x.n}개`, x.mdae != null ? `${fmt(x.mdae)}명` : '채점 기다리는 중', pair, x.keep != null ? `${fmt(x.keep)}명` : '–', x.cover != null ? `${x.cover}%` : '–'].forEach((v, i) => { const c = h('td', null, v); c.dataset.label = BMH[i]; r.appendChild(c); });
       bmt.appendChild(r);
     });
   } else document.getElementById('byModelWrap').style.display = 'none';
