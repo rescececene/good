@@ -120,6 +120,7 @@ td { font-variant-numeric: tabular-nums; }
     <h2>예측 성적 — 실제로 맞았나</h2>
     <p class="sub" id="statSub"></p>
     <div class="stats" id="stats"></div>
+    <div class="tbl-wrap" id="byModelWrap" style="margin-top:12px"><table id="byModel"></table></div>
     <div class="tbl-wrap" style="margin-top:12px"><table id="recent"></table></div>
   </section>
 
@@ -252,6 +253,19 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     const c = h('div'); c.append(h('div', 'lb', name), h('div', 'v', `${fmt(x.mdae)}명`), h('div', 'r', `오차 가운데 값 · ${x.n}개 · '그대로'면 ${fmt(x.keep)}명` + (x.cover != null ? ` · 범위 안 ${x.cover}%` : '')));
     box.appendChild(c);
   });
+
+  /* 모델별(실전 · 그림자) 다음 정각 실제 성적 */
+  const MODEL_NAMES = { hgb_v1: '옛 모델 (1~24시간을 한 모델로)', keep: '그대로 유지' };
+  const bm = D.by_model || {}, bmt = document.getElementById('byModel');
+  const bmKeys = Object.keys(bm);
+  if (bmKeys.length) {
+    const hr0 = document.createElement('tr'); ['모델', '채점한 예측', '오차 가운데 값', "'그대로'였다면", '범위 안'].forEach(x => hr0.appendChild(h('th', null, x))); bmt.appendChild(hr0);
+    bmKeys.sort((a, b) => (a === D.model ? -1 : b === D.model ? 1 : bm[a].mdae - bm[b].mdae)).forEach(m => {
+      const x = bm[m], r = document.createElement('tr');
+      [(MODEL_NAMES[m] || m) + (m === D.model ? ' · 실전' : ' · 그림자'), `${x.n}개`, `${fmt(x.mdae)}명`, `${fmt(x.keep)}명`, x.cover != null ? `${x.cover}%` : '–'].forEach(v => r.appendChild(h('td', null, v)));
+      bmt.appendChild(r);
+    });
+  } else document.getElementById('byModelWrap').style.display = 'none';
   const t = document.getElementById('recent');
   const head = document.createElement('tr'); ['맞힐 시각', '곡', '언제 낸 예측', '예측', '실제', '차이'].forEach(x => head.appendChild(h('th', null, x))); t.appendChild(head);
   (D.recent || []).forEach(e => {
