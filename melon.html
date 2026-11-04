@@ -121,6 +121,7 @@ td { font-variant-numeric: tabular-nums; }
     <p class="sub" id="statSub"></p>
     <div class="stats" id="stats"></div>
     <div class="tbl-wrap" id="byModelWrap" style="margin-top:12px"><table id="byModel"></table></div>
+    <p class="sub" id="promo" style="display:none"></p>
     <div class="tbl-wrap" style="margin-top:12px"><table id="recent"></table></div>
   </section>
 
@@ -255,7 +256,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   });
 
   /* 모델별(실전 · 그림자) 다음 정각 실제 성적 */
-  const MODEL_NAMES = { hgb_v1: '옛 모델 (1~24시간을 한 모델로)', e1_ens: '새 모델 (시간마다 따로 배운 나무 묶음)', keep: '그대로 유지' };
+  const MODEL_NAMES = { hgb_v1: '처음 모델 (1~24시간을 한 모델로)', e1_ens: '나무 묶음 (시간마다 따로 배움)', e5_mix: '구조 모델 (24시간 창 식 + 나무 보정)', e5_cal: '구조 모델 (24시간 창 식 + 나무 보정)', keep: '그대로 유지' };
   const bm = D.by_model || {}, bmt = document.getElementById('byModel');
   const bmKeys = Object.keys(bm);
   if (bmKeys.length) {
@@ -266,6 +267,11 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       bmt.appendChild(r);
     });
   } else document.getElementById('byModelWrap').style.display = 'none';
+  if (D.promo && D.promo.model) {        /* 실전 기록으로 실전 모델이 자동으로 바뀐 때 */
+    const pe = document.getElementById('promo');
+    pe.textContent = `실전 모델은 ${D.promo.since}에 '${MODEL_NAMES[D.promo.model] || D.promo.model}'(으)로 자동으로 바뀌었어요 — ${D.promo.why}`;
+    pe.style.display = '';
+  }
   const t = document.getElementById('recent');
   const head = document.createElement('tr'); ['맞힐 시각', '곡', '언제 낸 예측', '예측', '실제', '차이'].forEach(x => head.appendChild(h('th', null, x))); t.appendChild(head);
   (D.recent || []).forEach(e => {
