@@ -255,7 +255,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   });
 
   /* 모델별(실전 · 그림자) 다음 정각 실제 성적 */
-  const MODEL_NAMES = { hgb_v1: '옛 모델 (1~24시간을 한 모델로)', keep: '그대로 유지' };
+  const MODEL_NAMES = { hgb_v1: '옛 모델 (1~24시간을 한 모델로)', e1_ens: '새 모델 (시간마다 따로 배운 나무 묶음)', keep: '그대로 유지' };
   const bm = D.by_model || {}, bmt = document.getElementById('byModel');
   const bmKeys = Object.keys(bm);
   if (bmKeys.length) {
