@@ -94,6 +94,7 @@ th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--bo
 th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
 th { font-weight: 600; color: var(--ink-2); font-size: 12.5px; }
 td { font-variant-numeric: tabular-nums; }
+#byModel td:first-child, #byModel td:nth-child(4) { white-space: normal; word-break: keep-all; }   /* 열이 많아도 표가 칸 안에 들어가게 */
 @media (max-width: 640px) {
   table.cards tr:first-child { display: none; }
   table.cards tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--border); }
@@ -271,12 +272,12 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   const bm = D.by_model || {}, bmt = document.getElementById('byModel');
   const bmKeys = Object.keys(bm);
   if (bmKeys.length) {
-    const BMH = ['모델', '채점한 예측(7일)', '오차 가운데 값', '같은 칸에서 실전과 비교', "'그대로'였다면", '범위 안'];
+    const BMH = ['모델', '채점한 예측(7일)', '다음 정각 오차', '같은 칸에서 실전과 비교', "'그대로'였다면", '범위 안', '24시간 뒤 오차'];
     const hr0 = document.createElement('tr'); BMH.forEach(x => hr0.appendChild(h('th', null, x))); bmt.appendChild(hr0);
     bmKeys.sort((a, b) => (a === D.model ? -1 : b === D.model ? 1 : bm[a].mdae - bm[b].mdae)).forEach(m => {
       const x = bm[m], r = document.createElement('tr');
       const pair = m === D.model ? '실전' : (x.pair_n ? `${x.pair_m <= x.pair_prod ? '' : '+'}${Math.round((x.pair_m / Math.max(x.pair_prod, 1) - 1) * 100)}% (짝 ${x.pair_n}개 · ${fmt(x.pair_m)} 대 ${fmt(x.pair_prod)}명)` : '–');
-      [(MODEL_NAMES[m] || m) + (m === D.model ? ' · 실전' : ' · 그림자'), `${x.n}개`, x.mdae != null ? `${fmt(x.mdae)}명` : '채점 기다리는 중', pair, x.keep != null ? `${fmt(x.keep)}명` : '–', x.cover != null ? `${x.cover}%` : '–'].forEach((v, i) => { const c = h('td', null, v); c.dataset.label = BMH[i]; r.appendChild(c); });
+      [(MODEL_NAMES[m] || m) + (m === D.model ? ' · 실전' : ' · 그림자'), `${x.n}개`, x.mdae != null ? `${fmt(x.mdae)}명` : '채점 기다리는 중', pair, x.keep != null ? `${fmt(x.keep)}명` : '–', x.cover != null ? `${x.cover}%` : '–', x.h24_mdae != null ? `${fmt(x.h24_mdae)}명` : '–'].forEach((v, i) => { const c = h('td', null, v); c.dataset.label = BMH[i]; r.appendChild(c); });
       bmt.appendChild(r);
     });
   } else document.getElementById('byModelWrap').style.display = 'none';
