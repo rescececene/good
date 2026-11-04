@@ -94,6 +94,16 @@ th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--bo
 th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
 th { font-weight: 600; color: var(--ink-2); font-size: 12.5px; }
 td { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  table.cards tr:first-child { display: none; }
+  table.cards tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  table.cards td { display: flex; justify-content: space-between; gap: 12px; border: 0; padding: 2px 0; white-space: normal; text-align: right; }
+  table.cards td::before { content: attr(data-label); color: var(--muted); font-size: 12.5px; text-align: left; flex: none; }
+  table.cards td:first-child { font-weight: 600; }
+  #recent.short tr:nth-child(n+14) { display: none; }
+  .more.on { display: block; }
+}
+.more { display: none; margin: 10px auto 0; padding: 8px 16px; font: inherit; font-size: 13.5px; color: var(--ink); background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
 .empty { color: var(--muted); font-size: 13.5px; padding: 10px 0; }
 .notes { color: var(--ink-2); font-size: 13.5px; margin: 0; padding-left: 18px; }
 .notes li + li { margin-top: 4px; }
@@ -120,9 +130,10 @@ td { font-variant-numeric: tabular-nums; }
     <h2>예측 성적 — 실제로 맞았나</h2>
     <p class="sub" id="statSub"></p>
     <div class="stats" id="stats"></div>
-    <div class="tbl-wrap" id="byModelWrap" style="margin-top:12px"><table id="byModel"></table></div>
+    <div class="tbl-wrap" id="byModelWrap" style="margin-top:12px"><table id="byModel" class="cards"></table></div>
     <p class="sub" id="promo" style="display:none"></p>
-    <div class="tbl-wrap" style="margin-top:12px"><table id="recent"></table></div>
+    <div class="tbl-wrap" style="margin-top:12px"><table id="recent" class="cards"></table></div>
+    <button type="button" class="more" id="moreRecent">최근 예측 더 보기</button>
   </section>
 
   <section class="card">
@@ -256,14 +267,16 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   });
 
   /* 모델별(실전 · 그림자) 다음 정각 실제 성적 */
-  const MODEL_NAMES = { hgb_v1: '처음 모델 (1~24시간을 한 모델로)', e1_ens: '나무 묶음 (시간마다 따로 배움)', e5_mix: '구조 모델 (24시간 창 식 + 나무 보정)', e5_cal: '구조 모델 (24시간 창 식 + 나무 보정)', keep: '그대로 유지' };
+  const MODEL_NAMES = { hgb_v1: '처음 모델 (1~24시간을 한 모델로)', e1_ens: '나무 묶음 (시간마다 따로 배움)', e5_mix: '구조 모델 (24시간 창 식 + 나무 보정)', e5_cal: '구조 모델 (24시간 창 식 + 나무 보정)', e8_ens4: '나무 묶음 + 실시간 점유율', 'e5_cal+e9': '구조 모델 + 5분 차트 고침 (정각 직전만)', ens6: '섞은 모델 (부품 6개)', keep: '그대로 유지' };
   const bm = D.by_model || {}, bmt = document.getElementById('byModel');
   const bmKeys = Object.keys(bm);
   if (bmKeys.length) {
-    const hr0 = document.createElement('tr'); ['모델', '채점한 예측', '오차 가운데 값', "'그대로'였다면", '범위 안'].forEach(x => hr0.appendChild(h('th', null, x))); bmt.appendChild(hr0);
+    const BMH = ['모델', '채점한 예측(7일)', '오차 가운데 값', '같은 칸에서 실전과 비교', "'그대로'였다면", '범위 안'];
+    const hr0 = document.createElement('tr'); BMH.forEach(x => hr0.appendChild(h('th', null, x))); bmt.appendChild(hr0);
     bmKeys.sort((a, b) => (a === D.model ? -1 : b === D.model ? 1 : bm[a].mdae - bm[b].mdae)).forEach(m => {
       const x = bm[m], r = document.createElement('tr');
-      [(MODEL_NAMES[m] || m) + (m === D.model ? ' · 실전' : ' · 그림자'), `${x.n}개`, `${fmt(x.mdae)}명`, `${fmt(x.keep)}명`, x.cover != null ? `${x.cover}%` : '–'].forEach(v => r.appendChild(h('td', null, v)));
+      const pair = m === D.model ? '실전' : (x.pair_n ? `${x.pair_m <= x.pair_prod ? '' : '+'}${Math.round((x.pair_m / Math.max(x.pair_prod, 1) - 1) * 100)}% (짝 ${x.pair_n}개 · ${fmt(x.pair_m)} 대 ${fmt(x.pair_prod)}명)` : '–');
+      [(MODEL_NAMES[m] || m) + (m === D.model ? ' · 실전' : ' · 그림자'), `${x.n}개`, `${fmt(x.mdae)}명`, pair, `${fmt(x.keep)}명`, x.cover != null ? `${x.cover}%` : '–'].forEach((v, i) => { const c = h('td', null, v); c.dataset.label = BMH[i]; r.appendChild(c); });
       bmt.appendChild(r);
     });
   } else document.getElementById('byModelWrap').style.display = 'none';
@@ -273,13 +286,19 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     pe.style.display = '';
   }
   const t = document.getElementById('recent');
-  const head = document.createElement('tr'); ['맞힐 시각', '곡', '언제 낸 예측', '예측', '실제', '차이'].forEach(x => head.appendChild(h('th', null, x))); t.appendChild(head);
+  const RH = ['맞힐 시각', '곡', '언제 낸 예측', '예측', '실제', '차이'];
+  const head = document.createElement('tr'); RH.forEach(x => head.appendChild(h('th', null, x))); t.appendChild(head);
   (D.recent || []).forEach(e => {
     const r = document.createElement('tr');
     const diff = e.actual != null ? e.actual - e.pred : null;
-    [lab(e.target_t), e.title, `${e.made.slice(5).replace('-', '.')} (${e.when})`, fmt(e.pred), e.actual != null ? fmt(e.actual) : '기다리는 중', diff != null ? sgn(diff) : ''].forEach(x => r.appendChild(h('td', null, String(x))));
+    [lab(e.target_t), e.title, `${e.made.slice(5).replace('-', '.')} (${e.when})`, fmt(e.pred), e.actual != null ? fmt(e.actual) : '기다리는 중', diff != null ? sgn(diff) : ''].forEach((x, i) => { const c = h('td', null, String(x)); c.dataset.label = RH[i]; r.appendChild(c); });
     t.appendChild(r);
   });
+  if ((D.recent || []).length > 12) {     /* 휴대폰: 처음 12개만, 단추로 펼침 */
+    const mb = document.getElementById('moreRecent');
+    t.classList.add('short'); mb.classList.add('on');
+    mb.addEventListener('click', () => { t.classList.remove('short'); mb.classList.remove('on'); });
+  }
 }).catch(e => { document.getElementById('lede').textContent = '예측 자료를 불러오지 못했어요. 잠시 뒤 새로 고쳐 주세요.'; });
 </script>
 </body>
