@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="300">
+<meta name="description" content="멜론 24시간 이용자수 다음 시간 예측 — 매시간 자동으로 새로 고쳐져요">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Italiana&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<title>멜론 예측 · RESCENE</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10); --wash: rgba(11,11,11,0.04);
+  --pos: #e34948; --neg: #2a78d6; --good: #1baf7a;
+  --s0: #2a78d6; --s1: #eb6834; --s2: #1baf7a; --s3: #eda100; --s4: #e87ba4; --s5: #008300; --s6: #6250d6; --s7: #e34948;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10); --wash: rgba(255,255,255,0.05);
+    --pos: #e66767; --neg: #3987e5; --good: #199e70;
+    --s0: #3987e5; --s1: #d95926; --s2: #199e70; --s3: #c98500; --s4: #d55181; --s5: #008300; --s6: #9085e9; --s7: #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10); --wash: rgba(255,255,255,0.05);
+  --pos: #e66767; --neg: #3987e5; --good: #199e70;
+  --s0: #3987e5; --s1: #d95926; --s2: #199e70; --s3: #c98500; --s4: #d55181; --s5: #008300; --s6: #9085e9; --s7: #e66767;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; font-size: 15px; line-height: 1.55; -webkit-text-size-adjust: 100%; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 26px 16px 56px; }
+h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
+.lede { color: var(--ink-2); margin: 0 0 16px; font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+.sub { color: var(--ink-2); font-size: 13.5px; margin: 0 0 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.song { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.song .nm { display: flex; align-items: center; gap: 8px; font-weight: 650; }
+.song .nm i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.song .ar { color: var(--muted); font-size: 12.5px; margin-left: 18px; }
+.song .now { color: var(--ink-2); font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.song .lb { color: var(--ink-2); font-size: 12.5px; margin-top: 8px; }
+.song .big { font-size: 30px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.song .big small { font-size: 14px; font-weight: 550; margin-left: 6px; }
+.song .rg { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.song .more { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.song .more b { color: var(--ink); font-weight: 650; }
+.five { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+.five .t { font-size: 12px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
+.five svg { display: block; width: 100%; height: 46px; overflow: visible; }
+.up { color: var(--pos); } .down { color: var(--neg); }
+.tag { display: inline-block; font-size: 11.5px; color: var(--ink-2); border: 1px solid var(--border); border-radius: 5px; padding: 0 6px; margin-left: 6px; font-weight: 500; }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: inherit; fill: var(--muted); font-size: 11.5px; }
+svg .tick { font-variant-numeric: tabular-nums; }
+svg .day { fill: var(--ink-2); font-weight: 650; }
+svg .note { fill: var(--ink-2); font-size: 12px; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+svg .grid { stroke: var(--grid); stroke-width: 1; }
+svg .dayline { stroke: var(--axis); stroke-width: 1; }
+svg .ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+svg .ln.fc { stroke-dasharray: 5 5; }
+svg .band { opacity: .14; }
+svg .now { stroke: var(--ink-2); stroke-width: 1; }
+svg .cross { stroke: var(--ink-2); stroke-width: 1; opacity: 0; }
+svg .dot { stroke: var(--surface); stroke-width: 2; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--ink-2); margin: 0 0 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.lkey { width: 16px; height: 2px; border-radius: 1px; display: inline-block; background: var(--ink-2); }
+.lkey.dash { background: none; height: 0; border-top: 2px dashed var(--ink-2); }
+.sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; background: var(--ink-2); opacity: .25; }
+.mult { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+.mult h3 { font-size: 13.5px; margin: 0 0 4px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
+.mult h3 i { width: 10px; height: 10px; border-radius: 50%; }
+.tip { position: absolute; pointer-events: none; opacity: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.10); padding: 7px 10px; font-size: 12.5px; min-width: 150px; z-index: 2; transition: opacity .08s; }
+.tip.show { opacity: 1; }
+.tip .hd { color: var(--ink-2); margin-bottom: 2px; }
+.tip b { font-variant-numeric: tabular-nums; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; border-top: 1px solid var(--border); margin-top: 6px; }
+.stats div { padding: 10px 12px 4px 0; }
+.stats .lb { font-size: 12.5px; color: var(--ink-2); }
+.stats .v { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stats .r { font-size: 12px; color: var(--muted); }
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+th { font-weight: 600; color: var(--ink-2); font-size: 12.5px; }
+td { font-variant-numeric: tabular-nums; }
+.empty { color: var(--muted); font-size: 13.5px; padding: 10px 0; }
+.notes { color: var(--ink-2); font-size: 13.5px; margin: 0; padding-left: 18px; }
+.notes li + li { margin-top: 4px; }
+.nv{position:sticky;top:0;z-index:50;display:flex;gap:4px 14px;flex-wrap:wrap;align-items:center;justify-content:center;padding:10px max(16px,env(safe-area-inset-left,0px));background:rgba(28,39,51,.92);backdrop-filter:blur(8px);font:700 13px 'Noto Sans KR',sans-serif}.nv a{color:#dfe7ec;text-decoration:none}.nv a[aria-current]{color:#fff;border-bottom:2px solid #fff}.nv .nv-l{font:400 18px Italiana,serif;letter-spacing:.08em;color:#fff;margin-right:auto}
+.badge{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#1c2733;border-radius:5px;padding:1px 6px;margin-left:6px}
+.song.rs{border-color:var(--ink-2)}
+</style>
+</head>
+<body>
+<nav class="nv"><a class="nv-l" href="./">Pulse</a><a href="rescene.html">리센느</a><a href="albums.html">앨범</a><a href="songs.html">곡</a><a href="play.html">플레이어</a><a href="melon.html" aria-current="page">멜론 예측</a><a href="guide.html">구매 가이드</a><a href="combo.html">조합</a></nav>
+<div class="wrap">
+  <h1>멜론 다음 시간 예측</h1>
+  <p class="lede" id="lede"></p>
+  <div class="grid3" id="cards"></div>
+
+  <section class="card">
+    <h2>지난 48시간과 앞으로 24시간</h2>
+    <p class="sub">곡마다 따로 그렸어요(곡마다 숫자 크기가 달라서 세로 눈금이 달라요). 실선 = 실제, 점선 = 예측 가운데 값, 옅은 띠 = 10번 중 8번 들어오는 범위.</p>
+    <div class="legend"><span><i class="lkey"></i>실제</span><span><i class="lkey dash"></i>예측</span><span><i class="sw"></i>범위</span></div>
+    <div class="mult" id="mult"></div>
+  </section>
+
+  <section class="card">
+    <h2>예측 성적 — 실제로 맞았나</h2>
+    <p class="sub" id="statSub"></p>
+    <div class="stats" id="stats"></div>
+    <div class="tbl-wrap" style="margin-top:12px"><table id="recent"></table></div>
+  </section>
+
+  <section class="card">
+    <h2>읽는 법</h2>
+    <ul class="notes" id="notes">
+      <li>숫자는 멜론 곡의 '24시간 이용자수'(그 시각까지 최근 24시간 동안 들은 사람 수)예요. 써클차트 갤러리 차트봇의 '이용자수 추이' 글에서 매시간 가져와요. 실시간 3위 안 곡만 숫자가 나와서 그 곡들만 예측해요.</li>
+      <li>숫자는 매시 6분(정각 숫자가 나온 직후)과 52분(5분 차트로 그 시간 흐름을 본 정각 직전)쯤 새로 올라와요(사이트에 반영되기까지 1~2분). 이 페이지는 5분마다 새로 읽어요.</li>
+      <li>5분 차트: 같은 차트봇의 '멜론 5분 차트' 글. 그 시간 정각부터 5분마다 곡별 값(그 시간 동안 쌓인 몫)이에요. 오르면 이번 시간에 사람이 몰린다는 뜻이라 다음 정각 숫자에 반영돼요.</li>
+      <li>예측 성적은 이 페이지가 실제로 낸 예측과 나중에 나온 실제 값을 비교한 거예요(되돌아보며 맞춘 게 아니라 미리 낸 값).</li>
+    </ul>
+  </section>
+</div>
+<script>
+fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(D => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const fmt = n => n == null ? '–' : Math.round(n).toLocaleString('ko-KR');
+  const sgn = n => n == null ? '–' : (n > 0 ? '+' : n < 0 ? '−' : '±') + fmt(Math.abs(n));
+  const tickLab = (v, step) => step >= 10000 ? (v / 10000).toFixed(0) + '만' : step >= 1000 ? (v / 10000).toFixed(1) + '만' : (v / 10000).toFixed(2) + '만';
+  const col = s => `var(--s${s.slot % 8})`;
+  const lab = h => { const [d, hh] = h.split(' '); return `${+d.slice(5, 7)}.${d.slice(8)} ${+hh}시`; };
+  const hr = h => +h.slice(11, 13);
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(p, x, y, s, cls, anchor) { const t = el('text', { x, y, 'text-anchor': anchor || 'start' }, p); if (cls) t.setAttribute('class', cls); t.textContent = s; return t; }
+  function h(tag, cls, s) { const e = document.createElement(tag); if (cls) e.className = cls; if (s != null) e.textContent = s; return e; }
+  function niceStep(range) { const raw = range / 4; const p = Math.pow(10, Math.floor(Math.log10(raw || 1))); for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * p) return m * p; return 10 * p; }
+
+  const isR = s => /RESCENE|리센느/.test(s.artist || '');
+  const S = D.songs.slice().sort((a, b) => (isR(b) - isR(a)) || (b.base - a.base));
+  document.getElementById('lede').textContent =
+    `${D.built} 갱신 · 자료 ${lab(D.latest)}까지 · 다음 정각 ${lab(D.next)}` + (D.five_minute != null ? ` · 5분 차트 ${D.five_posted.slice(11, 16)}까지 반영` : ' · 이번 시간 5분 차트는 아직 없음');
+
+  /* 곡 카드 */
+  const cards = document.getElementById('cards');
+  if (!S.length) cards.appendChild(h('div', 'empty', '지금 실시간 3위 안에 숫자가 있는 곡이 없어요.'));
+  S.forEach(s => {
+    const c = h('div', 'song');
+    if (isR(s)) c.classList.add('rs');
+    const nm = h('div', 'nm'); const dot = h('i'); dot.style.background = col(s); nm.append(dot, document.createTextNode(s.title));
+    if (isR(s)) nm.appendChild(h('span', 'badge', 'RESCENE'));
+    if (s.how === 'keep') nm.appendChild(h('span', 'tag', '24시간 전 값 없음 · 그대로'));
+    c.append(nm, h('div', 'ar', s.artist));
+    c.appendChild(h('div', 'now', `지금 ${lab(s.base_t)} ${fmt(s.base)}`));
+    const n1 = s.path[0];
+    c.appendChild(h('div', 'lb', `다음 정각 ${lab(n1.t)} 예측`));
+    const big = h('div', 'big', fmt(n1.med)); const d = n1.med - s.base;
+    const sm = h('small', d > 0 ? 'up' : d < 0 ? 'down' : '', sgn(d)); big.appendChild(sm); c.appendChild(big);
+    if (n1.lo != null) c.appendChild(h('div', 'rg', `10번 중 8번 범위 ${fmt(n1.lo)} ~ ${fmt(n1.hi)}`));
+    const more = h('div', 'more');
+    [[3, '3시간 뒤'], [24, '내일 이 시각']].forEach(([k, name]) => {
+      const p = s.path[k - 1]; if (!p) return;
+      const sp = h('span', null, name + ' '); sp.appendChild(h('b', null, fmt(p.med))); sp.appendChild(document.createTextNode(' ' + sgn(p.med - s.base))); more.appendChild(sp);
+    });
+    c.appendChild(more);
+    // 5분 차트 (이번 시간)
+    const fv = h('div', 'five');
+    if (s.five && s.five.vals && s.five.vals.length) {
+      const v = s.five.vals, last = v[v.length - 1];
+      const t = h('div', 't'); t.append(h('span', null, `이번 시간 5분 차트 · ${s.five.pred_rank}위 예측`), h('span', null, `${last.toFixed(2)} (${s.five.slope >= 0 ? '+' : '−'}${Math.abs(s.five.slope).toFixed(2)})`));
+      fv.appendChild(t);
+      const svg = el('svg', { viewBox: '0 0 240 46', preserveAspectRatio: 'none', role: 'img', 'aria-label': '이번 시간 5분 차트 값' }, fv);
+      const nz = v.filter(x => x > 0), lo = Math.min(...nz), hi2 = Math.max(...nz), X = i => 4 + i * 232 / 11, Y = x => 40 - (x - lo) / Math.max(1e-9, hi2 - lo) * 32;
+      let dd = '', pen = false; v.forEach((x, i) => { if (!(x > 0)) { pen = false; return; } dd += (pen ? 'L' : 'M') + X(i) + ' ' + Y(x); pen = true; });
+      const p = el('path', { d: dd, fill: 'none', 'stroke-width': 2, 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }, svg); p.style.stroke = col(s);
+      const ci = v.length - 1; const cc = el('circle', { cx: X(ci), cy: Y(last), r: 3 }, svg); cc.style.fill = col(s);
+    } else {
+      fv.appendChild(h('div', 't', '이번 시간 5분 차트에 이 곡이 아직 없어요'));
+    }
+    c.appendChild(fv);
+    cards.appendChild(c);
+  });
+
+  /* 곡별 48시간 + 24시간 */
+  const mult = document.getElementById('mult');
+  const charts = [];
+  S.forEach(s => {
+    const box = h('div'); const h3 = h('h3'); const i = h('i'); i.style.background = col(s); h3.append(i, document.createTextNode(s.title)); box.appendChild(h3);
+    const ch = h('div', 'chart'); const tip = h('div', 'tip'); ch.appendChild(tip); box.appendChild(ch); mult.appendChild(box);
+    charts.push({ s, ch, tip });
+  });
+  function draw() {
+    charts.forEach(({ s, ch, tip }) => {
+      ch.querySelector('svg')?.remove();
+      const W = ch.clientWidth || 300, H = 220, m = { t: 10, r: 8, b: 26, l: 44 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+      const times = s.hist.map(x => x[0]).concat(s.path.map(p => p.t));
+      const act = s.hist.map(x => x[1]).concat(s.path.map(() => null));
+      const med = s.hist.map(() => null).concat(s.path.map(p => p.med)); med[s.hist.length - 1] = s.base;
+      const lo = s.hist.map(() => null).concat(s.path.map(p => p.lo)), hi = s.hist.map(() => null).concat(s.path.map(p => p.hi));
+      const vals = [...act, ...med, ...lo, ...hi].filter(v => v != null);
+      const vmin = Math.min(...vals), vmax = Math.max(...vals), span = Math.max(1000, vmax - vmin), step = niceStep(span);
+      const y0 = Math.floor((vmin - span * .05) / step) * step, y1 = Math.ceil((vmax + span * .05) / step) * step;
+      const N = times.length, X = i => m.l + i * pw / (N - 1), Y = v => m.t + ph * (1 - (v - y0) / (y1 - y0));
+      const svg = el('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': s.title + ' 지난 48시간과 앞으로 24시간' });
+      ch.prepend(svg);
+      for (let v = y0; v <= y1 + 1e-6; v += step) { el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: 'grid' }, svg); txt(svg, m.l - 6, Y(v) + 4, tickLab(v, step), 'tick', 'end'); }
+      times.forEach((t, i) => { if (hr(t) === 0) { el('line', { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg); txt(svg, X(i) + 3, m.t + ph + 16, `${+t.slice(5, 7)}.${t.slice(8, 10)}`, 'day', 'start'); } });
+      const seg = []; const band = () => { if (seg.length > 1) { const pts = seg.map(i => `${X(i)},${Y(hi[i])}`).concat(seg.slice().reverse().map(i => `${X(i)},${Y(lo[i])}`)); const pg = el('polygon', { points: pts.join(' '), class: 'band' }, svg); pg.style.fill = col(s); } seg.length = 0; };
+      times.forEach((t, i) => { if (lo[i] != null && hi[i] != null) seg.push(i); else band(); }); band();
+      const line = (arr, cls) => { let d = '', pen = false; arr.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; }); const p = el('path', { d, class: cls }, svg); p.style.stroke = col(s); };
+      line(med, 'ln fc'); line(act, 'ln');
+      const ni = s.hist.length - 1; el('line', { x1: X(ni), x2: X(ni), y1: m.t, y2: m.t + ph, class: 'now' }, svg); txt(svg, X(ni) + 4, m.t + 10, '지금', 'note');
+      const c1 = el('circle', { cx: X(ni + 1), cy: Y(s.path[0].med), r: 4, class: 'dot' }, svg); c1.style.fill = col(s);
+      const cross = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ph, class: 'cross' }, svg);
+      const hit = el('rect', { x: m.l, y: 0, width: pw, height: H, fill: 'transparent' }, svg);
+      const show = ev => {
+        const r = svg.getBoundingClientRect(); const x = (ev.clientX - r.left) * (W / r.width);
+        const i = Math.max(0, Math.min(N - 1, Math.round((x - m.l) / (pw / (N - 1)))));
+        cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.style.opacity = 1;
+        tip.replaceChildren(h('div', 'hd', lab(times[i]) + (i > ni ? ' · 예측' : '')));
+        if (i <= ni) tip.appendChild(h('div', null, act[i] == null ? '3위 밖(숫자 없음)' : `실제 ${fmt(act[i])}`));
+        else { tip.appendChild(h('div', null, `예측 ${fmt(med[i])} (${sgn(med[i] - s.base)})`)); if (lo[i] != null) tip.appendChild(h('div', 'hd', `범위 ${fmt(lo[i])} ~ ${fmt(hi[i])}`)); }
+        tip.classList.add('show');
+        const bw = ch.clientWidth, tw = tip.offsetWidth; let left = X(i) + 12; if (left + tw > bw) left = X(i) - tw - 12; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = '8px';
+      };
+      hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show);
+      hit.addEventListener('pointerleave', () => { cross.style.opacity = 0; tip.classList.remove('show'); });
+    });
+  }
+  draw();
+  let lastW = mult.clientWidth; window.addEventListener('resize', () => { if (mult.clientWidth !== lastW) { lastW = mult.clientWidth; draw(); } });
+
+  /* 예측 성적 */
+  const st = D.stats || {}, box = document.getElementById('stats');
+  const keys = Object.keys(st);
+  document.getElementById('statSub').textContent = keys.length
+    ? `이 페이지가 미리 낸 '다음 정각' 예측을 나중에 나온 실제 값과 비교했어요. 지금까지 기록 ${D.n_logged}개.`
+    : `아직 채점할 예측이 없어요 — 다음 정각 숫자가 나오면 첫 채점이 돼요. 지금까지 낸 예측 ${D.n_logged}개.`;
+  [['정각 직전', 1, '정각 직전(52분, 5분 차트 반영) → 다음 정각'], ['정각 직후', 1, '정각 직후(6분) → 다음 정각'], ['정각 직후', 3, '정각 직후 → 3시간 뒤'], ['정각 직후', 24, '정각 직후 → 24시간 뒤']].forEach(([w, k, name]) => {
+    const x = st[`${w}|${k}`]; if (!x) return;
+    const c = h('div'); c.append(h('div', 'lb', name), h('div', 'v', `${fmt(x.mdae)}명`), h('div', 'r', `오차 가운데 값 · ${x.n}개 · '그대로'면 ${fmt(x.keep)}명` + (x.cover != null ? ` · 범위 안 ${x.cover}%` : '')));
+    box.appendChild(c);
+  });
+  const t = document.getElementById('recent');
+  const head = document.createElement('tr'); ['맞힐 시각', '곡', '언제 낸 예측', '예측', '실제', '차이'].forEach(x => head.appendChild(h('th', null, x))); t.appendChild(head);
+  (D.recent || []).forEach(e => {
+    const r = document.createElement('tr');
+    const diff = e.actual != null ? e.actual - e.pred : null;
+    [lab(e.target_t), e.title, `${e.made.slice(5).replace('-', '.')} (${e.when})`, fmt(e.pred), e.actual != null ? fmt(e.actual) : '기다리는 중', diff != null ? sgn(diff) : ''].forEach(x => r.appendChild(h('td', null, String(x))));
+    t.appendChild(r);
+  });
+}).catch(e => { document.getElementById('lede').textContent = '예측 자료를 불러오지 못했어요. 잠시 뒤 새로 고쳐 주세요.'; });
+</script>
+</body>
+</html>
