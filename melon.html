@@ -189,14 +189,6 @@ td { font-variant-numeric: tabular-nums; }
     <button type="button" class="more" id="moreRecent">더 보기</button>
   </section>
 <!--LOCAL_ONLY-->
-  <section class="card">
-    <h2>알아 두면 좋은 것</h2>
-    <ul class="notes">
-      <li>숫자는 멜론 '24시간 이용자수'예요. 써클차트 갤러리 차트봇의 '이용자수 추이' 글에서 매시간 가져와요.</li>
-      <li>실시간 3위 안에 든 곡만 숫자가 나와서 그 곡들만 예측해요. 표에서 빈칸인 시간은 3위 밖이었던 때예요.</li>
-      <li>매시 6분쯤 새 숫자가 나오면 예측도 새로 바뀌어요. 이 페이지는 5분마다 저절로 새로 고쳐져요.</li>
-    </ul>
-  </section>
 </div>
 <script>
 fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(D => {
@@ -219,7 +211,9 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   const dcls = d => d > 0 ? ' up' : d < 0 ? ' down' : ' zero';
   const dtx = d => d === 0 ? '0' : sgn(d);          // 차트봇은 0 을 '0'(보라)으로
   document.getElementById('lede').textContent = `다음 시간(${NH}시) 멜론 이용자수를 미리 맞혀 봤어요.`;
-  document.getElementById('upd').textContent = `${D.built.slice(11)} 업데이트 · 매시간 저절로 바뀌어요`;
+  { const bh = +D.built.slice(11, 13), bm = +D.built.slice(14, 16), p2 = n => String(n).padStart(2, '0');   // 정기 실행: 매시 6분 · 52분
+    const nx = bm < 52 ? `${p2(bh)}:52` : `${p2((bh + 1) % 24)}:06`;
+    document.getElementById('upd').textContent = `마지막 업데이트 ${D.built.slice(11)} · 다음 업데이트 ${nx}쯤 (매시 6분·52분)`; }
   document.getElementById('guide').replaceChildren(document.createTextNode('아래 표는 차트봇 \'이용자수 추이\' 표와 같아요. '), h('b', null, `맨 아래 보라색 줄이 ${NH}시 예측`), document.createTextNode('이에요.'));
 
   /* 맨 위 요약: 곡마다 다음 시간 예상 숫자와 증감만 */
