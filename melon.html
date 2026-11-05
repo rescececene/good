@@ -161,6 +161,8 @@ td { font-variant-numeric: tabular-nums; }
   .more.on { display: block; }
 }
 .more { display: none; margin: 10px auto 0; padding: 8px 16px; font: inherit; font-size: 13.5px; color: var(--ink); background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+.refm { color: var(--muted); font-size: 11.5px; line-height: 1.6; margin: 18px 2px 0; }
+.refm div + div { margin-top: 2px; }
 .empty { color: var(--muted); font-size: 13.5px; padding: 10px 0; }
 .notes { color: var(--ink-2); font-size: 14px; margin: 0; padding-left: 18px; }
 .notes li + li { margin-top: 4px; }
@@ -191,6 +193,7 @@ td { font-variant-numeric: tabular-nums; }
     <button type="button" class="more" id="moreRecent">더 보기</button>
   </section>
 <!--LOCAL_ONLY-->
+  <div class="refm" id="refm"></div>
 </div>
 <script>
 fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(D => {
@@ -371,6 +374,14 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     const mb = document.getElementById('moreRecent');
     t.classList.add('short'); mb.classList.add('on');
     mb.addEventListener('click', () => { t.classList.remove('short'); mb.classList.remove('on'); });
+  }
+  /* 맨 아래 참고 지표(With · 백화요란) */
+  const RF = D.ref || [], rfe = document.getElementById('refm');
+  if (RF.length) {
+    rfe.appendChild(h('div', null, '참고 지표 (보통 곡: 점유율 1%당 ' + fmt(RF[0].ref_conv) + '명 · 밤/낮 ' + RF[0].ref_nd + ')'));
+    RF.forEach(x => rfe.appendChild(h('div', null, `${x.title.replace(/ \(.*\)$/, '')} — 점유율 1%당 24시간 이용자 ${fmt(x.conv)}명`
+      + (x.conv_prev ? ` (하루 전 ${fmt(x.conv_prev)}명)` : '') + (x.nd != null ? ` · 밤/낮 점유율 ${x.nd}` : '')
+      + (x.if_public ? ` · 보통 곡처럼 들었다면 약 ${fmt(x.if_public)}명` : ''))));
   }
   /*LOCAL_ONLY_JS*/
 }).catch(e => { document.getElementById('lede').textContent = '예측 자료를 불러오지 못했어요. 잠시 뒤 새로 고쳐 주세요.'; });
