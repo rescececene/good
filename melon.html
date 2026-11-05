@@ -378,10 +378,9 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   /* 맨 아래 참고 지표(With · 백화요란) */
   const RF = D.ref || [], rfe = document.getElementById('refm');
   if (RF.length) {
-    rfe.appendChild(h('div', null, '참고 지표 (보통 곡: 점유율 1%당 ' + fmt(RF[0].ref_conv) + '명 · 밤/낮 ' + RF[0].ref_nd + ')'));
+    rfe.appendChild(h('div', null, '참고 지표 (보통 곡: 점유율 1%당 ' + fmt(RF[0].ref_conv) + '명)'));
     RF.forEach(x => rfe.appendChild(h('div', null, `${x.title.replace(/ \(.*\)$/, '')} — 점유율 1%당 24시간 이용자 ${fmt(x.conv)}명`
-      + (x.conv_prev ? ` (하루 전 ${fmt(x.conv_prev)}명)` : '') + (x.nd != null ? ` · 밤/낮 점유율 ${x.nd}` : '')
-      + (x.if_public ? ` · 보통 곡처럼 들었다면 약 ${fmt(x.if_public)}명` : ''))));
+      + (x.conv_prev ? ` (하루 전 ${fmt(x.conv_prev)}명)` : '')));
   }
   /*LOCAL_ONLY_JS*/
 }).catch(e => { document.getElementById('lede').textContent = '예측 자료를 불러오지 못했어요. 잠시 뒤 새로 고쳐 주세요.'; });
