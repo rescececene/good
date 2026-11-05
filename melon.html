@@ -212,8 +212,10 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   const dtx = d => d === 0 ? '0' : sgn(d);          // 차트봇은 0 을 '0'(보라)으로
   document.getElementById('lede').textContent = `다음 시간(${NH}시) 멜론 이용자수를 미리 맞혀 봤어요.`;
   { const bh = +D.built.slice(11, 13), bm = +D.built.slice(14, 16), p2 = n => String(n).padStart(2, '0');   // 정기 실행: 매시 6분 · 52분
-    const nx = bm < 52 ? `${p2(bh)}:52` : `${p2((bh + 1) % 24)}:06`;
-    document.getElementById('upd').textContent = `마지막 업데이트 ${D.built.slice(11)} · 다음 업데이트 ${nx}쯤 (매시 6분·52분)`; }
+    const nm = [6, 16, 26, 36, 46, 52, 56].find(x => x > bm);   // 정기 실행 6 · 52분 + 5분 차트 고침 16 · 26 · 36 · 46 · 56분
+    const nx = nm != null ? `${p2(bh)}:${p2(nm)}` : `${p2((bh + 1) % 24)}:06`;
+    const fv = D.five_posted && D.songs.some(s => s.nc && s.nc.k > 0) ? ` · 5분 차트 ${D.five_posted.slice(11, 16)}까지 반영` : '';
+    document.getElementById('upd').textContent = `마지막 업데이트 ${D.built.slice(11)}${fv} · 다음 업데이트 ${nx}쯤 (10분마다)`; }
   document.getElementById('guide').replaceChildren(h('b', null, `표 맨 아래 보라색 줄이 ${NH}시 예측`), document.createTextNode('이에요.'));
 
   /* 맨 위 요약: 곡마다 다음 시간 예상 숫자와 증감만 */
