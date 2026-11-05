@@ -347,7 +347,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   /* 얼마나 맞았나 — 다음 시간 예측과 나중에 나온 실제 숫자 */
   const x1 = (D.stats || {})['정각 직후|1'] || (D.stats || {})['정각 직전|1'];
   document.getElementById('statSub').textContent = x1
-    ? `지금까지 다음 시간 예측 ${x1.n}번을 실제 숫자와 맞춰 봤어요. 절반은 실제와 ${fmt(x1.mdae)}명 안쪽 차이였어요.`
+    ? `지금까지 다음 시간 예측 ${x1.n}번을 실제 숫자와 맞춰 봤어요. 절반은 실제와 ${fmt(x1.mdae)}명 안쪽 차이였어요.` + (x1.dir != null ? ` 오르내림 방향은 ${x1.dir}% 맞혔고, 1,000명 안쪽으로 맞힌 게 ${x1.w1000}%예요.` : '')
     : '아직 맞춰 본 예측이 없어요. 다음 정각 숫자가 나오면 채워져요.';
   const seenR = new Set();
   const rec = (D.recent || []).slice().sort((a, b) => b.target_t.localeCompare(a.target_t) || b.made.localeCompare(a.made))
