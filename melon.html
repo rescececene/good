@@ -368,7 +368,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   rec.forEach(e => {
     const r = document.createElement('tr');
     const df = e.actual != null ? e.actual - e.pred : null;          // + = 실제가 더 많았음(빨강) · − = 실제가 더 적었음(파랑)
-    [lab(e.target_t), e.title, fmt(e.pred), e.actual != null ? fmt(e.actual) : '나오기 전', df != null ? sgn(df) + '명' : ''].forEach((x, i) => { const c = h('td', null, String(x)); c.dataset.label = RH[i]; if (i === 4 && df) c.className = df > 0 ? 'up' : 'down'; r.appendChild(c); });
+    [lab(e.target_t), e.title, fmt(e.pred), e.actual != null ? fmt(e.actual) : '나오기 전', df != null ? sgn(df) + '명' : ''].forEach((x, i) => { const c = h('td', null, String(x)); c.dataset.label = RH[i]; if (i === 4 && df) c.className = df > 0 ? 'up' : 'down'; if (i === 3 && df) c.append(' ', h('span', df > 0 ? 'up' : 'down', df > 0 ? '▲' : '▼')); r.appendChild(c); });
     t.appendChild(r);
   });
   if (rec.length > 12) {     /* 휴대폰: 처음 12개만, 단추로 펼침 */
