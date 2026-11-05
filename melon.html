@@ -48,20 +48,25 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body { background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; font-size: 15px; line-height: 1.55; -webkit-text-size-adjust: 100%; word-break: keep-all; overflow-wrap: break-word; }
-.wrap { max-width: 980px; margin: 0 auto; padding: 26px 16px 56px; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 56px; }
 h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; letter-spacing: -0.01em; }
 h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
-.lede { color: var(--ink-2); margin: 0 0 16px; font-size: 14px; }
+.lede { margin: 0; font-size: 16px; font-weight: 500; }
+.upd { color: var(--ink-2); margin: 2px 0 14px; font-size: 13px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
-.sub { color: var(--ink-2); font-size: 13.5px; margin: 0 0 10px; }
-.five { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
-.five .t { font-size: 12px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
-.five svg { display: block; width: 100%; height: 46px; overflow: visible; }
+.sub { color: var(--ink-2); font-size: 14px; margin: 0 0 10px; }
 .up { color: var(--pos); } .down { color: var(--neg); } .zero { color: var(--zero); }
-.tag { display: inline-block; font-size: 11.5px; color: var(--ink-2); border: 1px solid var(--border); border-radius: 5px; padding: 0 6px; margin-left: 6px; font-weight: 500; }
-.guide { color: var(--ink-2); font-size: 13px; margin: -6px 0 12px; }
+/* 맨 위 요약 — 다음 시간 예상만 */
+.sum { max-width: 560px; background: var(--surface); border: 1px solid var(--tl); border-radius: 10px; padding: 4px 14px; margin: 0 0 14px; font-variant-numeric: tabular-nums; }
+.sum .row { display: grid; grid-template-columns: 1fr auto 70px; gap: 12px; align-items: center; padding: 9px 0; border-top: 1px solid var(--border); }
+.sum .row.hd { border-top: 0; padding: 7px 0 5px; font-size: 12.5px; color: var(--ink-2); font-weight: 600; }
+.sum .row.hd span:not(:first-child) { text-align: right; }
+.sum .nm { font-weight: 650; line-height: 1.3; }
+.sum .nm small { display: block; font-size: 12px; font-weight: 400; color: var(--ink-2); }
+.sum .v { font-size: 19px; font-weight: 700; text-align: right; }
+.sum .dv { text-align: right; font-weight: 650; }
+.guide { color: var(--ink-2); font-size: 14px; margin: 0 0 10px; }
 .guide b { color: var(--ink); font-weight: 650; }
-.guide i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin: 0 3px 0 1px; }
 .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(286px, 100%), 1fr)); gap: 12px; margin-bottom: 14px; align-items: start; }
 .bp { background: var(--surface); border: 1px solid var(--tl); border-radius: 8px; overflow: hidden; }
 .bp .bh { padding: 8px 10px 7px; text-align: center; border-bottom: 1px solid var(--tl); }
@@ -80,10 +85,9 @@ table.b5 td.t { color: var(--ink-2); }
 table.b5 td.d.up { color: var(--pos); }
 table.b5 td.d.down { color: var(--neg); }
 table.b5 tr.night td { background: var(--night); }
-table.b5 tr.pred td { background: var(--pred); border-top: 2px solid var(--predline); height: auto; padding: 5px 2px; }
-table.b5 tr.pred td.t b { display: block; color: var(--ink); font-weight: 650; line-height: 1.25; }
-table.b5 tr.pred td.u b { font-size: 15px; font-weight: 700; color: var(--ink); }
-table.b5 tr.pred td.u small { display: block; font-size: 10.5px; line-height: 1.3; color: var(--ink-2); white-space: normal; }
+table.b5 tr.pred td { background: var(--pred); border-top: 2px solid var(--predline); height: 32px; }
+table.b5 tr.pred td.t { color: var(--ink); font-weight: 650; }
+table.b5 tr.pred td.u { font-size: 15px; font-weight: 700; color: var(--ink); }
 table.b5 tr.pred td.d { font-weight: 650; }
 table.b5 tr td.r1 { background: var(--r1); }
 table.b5 tr td.r2 { background: var(--r2); }
@@ -98,21 +102,16 @@ table.b5 tr td.pk { background: var(--pk); }
 table.b5 td.d.zero { color: var(--zero); }
 table.b5 tr.meta .sat { color: var(--neg); }
 table.b5 tr.meta .sun { color: var(--pos); }
-table.b5 tr.pred td.r.fr { box-shadow: inset 0 0 0 1px var(--predline); }
-.pill { display: inline-block; font-size: 10.5px; font-weight: 700; line-height: 16px; color: #fff; background: var(--predline); border-radius: 4px; padding: 0 5px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 700; line-height: 18px; color: #fff; background: var(--predline); border-radius: 4px; padding: 0 8px; }
 .bx { display: none; width: 100%; padding: 8px 10px; font: inherit; font-size: 13px; color: var(--ink-2); background: transparent; border: 0; border-top: 1px solid var(--tl); cursor: pointer; }
-.bf { padding: 8px 10px 10px; border-top: 1px solid var(--tl); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.bf b { color: var(--ink); font-weight: 650; }
-.bf .five { margin-top: 6px; padding-top: 6px; }
-.bf .ahead { display: grid; grid-template-columns: 1fr auto auto; gap: 1px 12px; align-items: baseline; }
-.bf .ahead b, .bf .ahead .dq { text-align: right; }
-.bf .ahead .dq { min-width: 54px; }
+.kn { padding: 7px 10px; border-top: 1px solid var(--tl); font-size: 12.5px; color: var(--ink-2); }
 @media (max-width: 640px) {
   .bp:not(.all) tr.old { display: none; }
   .bx { display: block; }
 }
 @media (min-width: 641px) {
-  table.b5 th, table.b5 td { height: 22px; line-height: 1.2; padding: 1px 2px; }   /* 차트봇 그림처럼 22px 줄 — 예측 줄이 첫 화면에 */
+  table.b5 th, table.b5 td { height: 22px; line-height: 1.2; padding: 1px 2px; }   /* 차트봇 그림처럼 22px 줄 */
+  table.b5 tr.pred td { height: 28px; }
   .bp { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; }   /* 제목이 두 줄인 곡이 있어도 세 표 줄이 나란히 */
   .bp .bh { display: flex; flex-direction: column; justify-content: center; }
 }
@@ -144,18 +143,12 @@ svg .dot { stroke: var(--surface); stroke-width: 2; }
 .tip.show { opacity: 1; }
 .tip .hd { color: var(--ink-2); margin-bottom: 2px; }
 .tip b { font-variant-numeric: tabular-nums; }
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; border-top: 1px solid var(--border); margin-top: 6px; }
-.stats div { padding: 10px 12px 4px 0; }
-.stats .lb { font-size: 12.5px; color: var(--ink-2); }
-.stats .v { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
-.stats .r { font-size: 12px; color: var(--muted); }
 .tbl-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
 th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
 th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
 th { font-weight: 600; color: var(--ink-2); font-size: 12.5px; }
 td { font-variant-numeric: tabular-nums; }
-#byModel td:first-child, #byModel td:nth-child(4) { white-space: normal; word-break: keep-all; }   /* 열이 많아도 표가 칸 안에 들어가게 */
 @media (max-width: 640px) {
   table.cards tr:first-child { display: none; }
   table.cards tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--border); }
@@ -167,45 +160,41 @@ td { font-variant-numeric: tabular-nums; }
 }
 .more { display: none; margin: 10px auto 0; padding: 8px 16px; font: inherit; font-size: 13.5px; color: var(--ink); background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
 .empty { color: var(--muted); font-size: 13.5px; padding: 10px 0; }
-.notes { color: var(--ink-2); font-size: 13.5px; margin: 0; padding-left: 18px; }
+.notes { color: var(--ink-2); font-size: 14px; margin: 0; padding-left: 18px; }
 .notes li + li { margin-top: 4px; }
 .nv{position:sticky;top:0;z-index:50;display:flex;gap:4px 14px;flex-wrap:wrap;align-items:center;justify-content:center;padding:10px max(16px,env(safe-area-inset-left,0px));background:rgba(28,39,51,.92);backdrop-filter:blur(8px);font:700 13px 'Noto Sans KR',sans-serif}.nv a{color:#dfe7ec;text-decoration:none}.nv a[aria-current]{color:#fff;border-bottom:2px solid #fff}.nv .nv-l{font:400 18px Italiana,serif;letter-spacing:.08em;color:#fff;margin-right:auto}
-.badge{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#1c2733;border-radius:5px;padding:1px 6px;margin-left:6px}
 </style>
 </head>
 <body>
 <nav class="nv"><a class="nv-l" href="./">Pulse</a><a href="rescene.html">리센느</a><a href="albums.html">앨범</a><a href="songs.html">곡</a><a href="play.html">플레이어</a><a href="melon.html" aria-current="page">멜론 예측</a><a href="guide.html">구매 가이드</a><a href="combo.html">조합</a></nav>
 <div class="wrap">
-  <h1>멜론 다음 시간 예측</h1>
-  <p class="lede" id="lede"></p>
-  <p class="guide"><b>맨 아래 보라색 줄 = 다음 정각 예측</b> · 작은 숫자 = 예측 범위 · <i style="background:var(--pk)"></i>최고 · <i style="background:var(--night)"></i>새벽 2~6시</p>
+  <h1>멜론 이용자수 예측</h1>
+  <p class="lede" id="lede">다음 시간 멜론 이용자수를 미리 맞혀 봤어요.</p>
+  <p class="upd" id="upd"></p>
+  <div class="sum" id="sum"></div>
+  <p class="guide" id="guide">아래 표는 차트봇 '이용자수 추이' 표와 같아요. <b>맨 아래 보라색 줄이 예측</b>이에요.</p>
   <div class="board" id="board"></div>
 
   <section class="card">
-    <h2>지난 48시간과 앞으로 24시간</h2>
-    <p class="sub">곡마다 따로 그렸어요(곡마다 숫자 크기가 달라서 세로 눈금이 달라요). 실선 = 실제, 점선 = 예측 가운데 값, 옅은 띠 = 10번 중 8번 들어오는 범위.</p>
-    <div class="legend"><span><i class="lkey"></i>실제</span><span><i class="lkey dash"></i>예측</span><span><i class="sw"></i>범위</span></div>
+    <h2>그래프로 보기</h2>
+    <p class="sub">실선은 실제 숫자, 점선은 예측이에요. 실제 숫자는 대개 옅은 색 띠 안에 들어와요.</p>
+    <div class="legend"><span><i class="lkey"></i>실제</span><span><i class="lkey dash"></i>예측</span><span><i class="sw"></i>예측 범위</span></div>
     <div class="mult" id="mult"></div>
   </section>
 
   <section class="card">
-    <h2>예측 성적 — 실제로 맞았나</h2>
+    <h2>얼마나 맞았나</h2>
     <p class="sub" id="statSub"></p>
-    <div class="stats" id="stats"></div>
-    <div class="tbl-wrap" id="byModelWrap" style="margin-top:12px"><table id="byModel" class="cards"></table></div>
-    <p class="sub" id="promo" style="display:none"></p>
-    <div class="tbl-wrap" style="margin-top:12px"><table id="recent" class="cards"></table></div>
-    <button type="button" class="more" id="moreRecent">최근 예측 더 보기</button>
+    <div class="tbl-wrap"><table id="recent" class="cards"></table></div>
+    <button type="button" class="more" id="moreRecent">더 보기</button>
   </section>
-
+<!--LOCAL_ONLY-->
   <section class="card">
-    <h2>읽는 법</h2>
-    <ul class="notes" id="notes">
-      <li>맨 위 표는 써클차트 갤러리 차트봇 '이용자수 추이' 그림과 같은 꼴이에요(곡마다 최근 25시간, 3위 밖이던 시간은 이용자수 빈칸, 증감은 마지막으로 보였던 값과의 차이). 맨 아래 보라색 줄이 다음 정각 예측이에요 — 큰 숫자 = 예측 가운데 값, 작은 숫자 = 10번 중 8번 들어오는 범위, 순위 칸 = 그 시간 5분 차트로 본 예상 순위('–' = 5분 차트 3위 밖). 휴대폰에선 최근 12시간이 먼저 보여요.</li>
-      <li>숫자는 멜론 곡의 '24시간 이용자수'(그 시각까지 최근 24시간 동안 들은 사람 수)예요. 써클차트 갤러리 차트봇의 '이용자수 추이' 글에서 매시간 가져와요. 실시간 3위 안 곡만 숫자가 나와서 그 곡들만 예측해요.</li>
-      <li>숫자는 매시 6분(정각 숫자가 나온 직후)과 52분(5분 차트로 그 시간 흐름을 본 정각 직전)쯤 새로 올라와요(사이트에 반영되기까지 1~2분). 이 페이지는 5분마다 새로 읽어요.</li>
-      <li>5분 차트: 같은 차트봇의 '멜론 5분 차트' 글. 그 시간 정각부터 5분마다 곡별 값(그 시간 동안 쌓인 몫)이에요. 오르면 이번 시간에 사람이 몰린다는 뜻이라 다음 정각 숫자에 반영돼요.</li>
-      <li>예측 성적은 이 페이지가 실제로 낸 예측과 나중에 나온 실제 값을 비교한 거예요(되돌아보며 맞춘 게 아니라 미리 낸 값).</li>
+    <h2>알아 두면 좋은 것</h2>
+    <ul class="notes">
+      <li>숫자는 멜론 '24시간 이용자수'예요. 써클차트 갤러리 차트봇의 '이용자수 추이' 글에서 매시간 가져와요.</li>
+      <li>실시간 3위 안에 든 곡만 숫자가 나와서 그 곡들만 예측해요. 표에서 빈칸인 시간은 3위 밖이었던 때예요.</li>
+      <li>매시 6분쯤 새 숫자가 나오면 예측도 새로 바뀌어요. 이 페이지는 5분마다 저절로 새로 고쳐져요.</li>
     </ul>
   </section>
 </div>
@@ -226,19 +215,33 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   const isR = s => /RESCENE|리센느/.test(s.artist || '');
   const lastRank = s => { const r = s.hist.length ? s.hist[s.hist.length - 1][2] : null; return r == null ? 99 : r; };
   const S = D.songs.slice().sort((a, b) => (isR(b) - isR(a)) || (lastRank(a) - lastRank(b)) || (b.base - a.base));   // 리센느 먼저, 그다음 지금 순위
-  document.getElementById('lede').textContent =
-    `${D.built.slice(11)} 갱신 · 자료 ${lab(D.latest)}까지 · 다음 정각 ${lab(D.next)}` + (D.five_minute != null ? ` · 5분 차트 ${D.five_posted.slice(11, 16)}까지 반영` : ' · 이번 시간 5분 차트는 아직 없음');
+  const NH = hr(D.next);
+  const dcls = d => d > 0 ? ' up' : d < 0 ? ' down' : ' zero';
+  const dtx = d => d === 0 ? '0' : sgn(d);          // 차트봇은 0 을 '0'(보라)으로
+  document.getElementById('lede').textContent = `다음 시간(${NH}시) 멜론 이용자수를 미리 맞혀 봤어요.`;
+  document.getElementById('upd').textContent = `${D.built.slice(11)} 업데이트 · 매시간 저절로 바뀌어요`;
+  document.getElementById('guide').replaceChildren(document.createTextNode('아래 표는 차트봇 \'이용자수 추이\' 표와 같아요. '), h('b', null, `맨 아래 보라색 줄이 ${NH}시 예측`), document.createTextNode('이에요.'));
 
-  /* 차트봇 '이용자수 추이' 표 꼴 — 곡마다 최근 25시간 + 맨 아래 다음 정각 예측 줄 */
+  /* 맨 위 요약: 곡마다 다음 시간 예상 숫자와 증감만 */
+  const sum = document.getElementById('sum');
+  if (S.length) {
+    const hd = h('div', 'row hd'); hd.append(h('span', null, '곡'), h('span', null, `${NH}시 예상`), h('span', null, '증감')); sum.appendChild(hd);
+    S.forEach(s => {
+      const n1 = s.path[0]; if (!n1) return;
+      const d = n1.med - s.base, r = h('div', 'row'), nm = h('span', 'nm', s.title);
+      if (s.artist) nm.appendChild(h('small', null, s.artist));
+      r.append(nm, h('b', 'v', fmt(n1.med)), h('span', 'dv' + dcls(d), dtx(d)));
+      sum.appendChild(r);
+    });
+  } else sum.appendChild(h('div', 'empty', '지금 실시간 3위 안에 숫자가 있는 곡이 없어요.'));
+
+  /* 차트봇 '이용자수 추이' 표 꼴 — 곡마다 최근 25시간 + 맨 아래 예측 줄 */
   const WK = '일월화수목금토';
   const dlab = t => `${t.slice(0, 4)}.${t.slice(5, 7)}.${t.slice(8, 10)}(${WK[new Date(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10)).getDay()]})`;
   const rc = v => v == null ? '' : v <= 1 ? 'r1' : v === 2 ? 'r2' : v === 3 ? 'r3' : v <= 10 ? 'rx'
     : v <= 20 ? 'r11' : v <= 30 ? 'r21' : v <= 40 ? 'r31' : v <= 50 ? 'r41' : 'r51';     // 차트봇 칸 색 9단계
-  const dcls = d => d > 0 ? ' up' : d < 0 ? ' down' : ' zero';
-  const dtx = d => d === 0 ? '0' : sgn(d);          // 차트봇은 0 을 '0'(보라)으로
   const ds = t => { const w = new Date(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10)).getDay(); return h('span', w === 6 ? 'sat' : w === 0 ? 'sun' : null, dlab(t)); };
   const board = document.getElementById('board');
-  if (!S.length) board.appendChild(h('div', 'empty', '지금 실시간 3위 안에 숫자가 있는 곡이 없어요.'));
   S.forEach(s => {
     const all = s.hist.slice(-26);                     // 맨 앞 한 줄은 첫 줄 증감 계산에만 씀(표엔 25시간)
     const rows = all.slice(1);
@@ -274,16 +277,12 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       if (u != null) prev = u;
       tbd.appendChild(tr);
     });
-    if (n1) {                                          // 다음 정각 예측 줄
+    if (n1) {                                          // 다음 시간 예측 줄 — 순위 · T100 자리엔 '예측' 표시만
       const tr = document.createElement('tr'); tr.className = 'pred';
-      const tc = cell(tr, '', 't'); tc.append(h('b', null, `${hr(n1.t)}시`), h('span', 'pill', '예측'));
+      const tc = cell(tr, `${hr(n1.t)}시`, 't');
       if (n1.t.slice(0, 10) !== tN.slice(0, 10)) tc.title = dlab(n1.t);
-      const fr = s.five && s.five.pred_rank;
-      const rcell = cell(tr, fr ? String(fr) : (D.five_minute != null ? '–' : ''), 'r' + (fr ? ' fr ' + rc(fr) : ''));
-      rcell.title = fr ? '5분 차트로 본 다음 정각 예상 순위' : (D.five_minute != null ? '이번 시간 5분 차트 3위 안에 없음' : '');
-      cell(tr, '', 'r');
-      const uc = cell(tr, '', 'u'); uc.appendChild(h('b', null, fmt(n1.med)));
-      if (n1.lo != null && n1.hi != null) { const sm = h('small'); sm.append(document.createTextNode(fmt(n1.lo) + '~'), document.createElement('wbr'), document.createTextNode(fmt(n1.hi))); uc.appendChild(sm); }
+      const pc = cell(tr, '', 'pl'); pc.colSpan = 2; pc.appendChild(h('span', 'pill', '예측'));
+      cell(tr, fmt(n1.med), 'u');
       const d = n1.med - s.base;
       cell(tr, dtx(d), 'd' + dcls(d));
       tbd.appendChild(tr);
@@ -292,42 +291,15 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     p.appendChild(tb);
     const nOld = rows.filter((_, i) => rows.length - i > 12).length;
     if (nOld) {
-      const bx = h('button', 'bx', `앞 ${nOld}시간 더 보기 (${rows.length}시간 표)`); bx.type = 'button';
+      const bx = h('button', 'bx', `앞 ${nOld}시간 더 보기`); bx.type = 'button';
       bx.addEventListener('click', () => { p.classList.add('all'); bx.remove(); });
       p.appendChild(bx);
     }
-    const bf = h('div', 'bf');
-    const ln = h('div', 'ahead');
-    [[3, '3시간 뒤'], [24, '내일 이 시각']].forEach(([k, name]) => {
-      const q = s.path[k - 1]; if (!q) return;
-      const dq = q.med - s.base;
-      ln.append(h('span', null, `${name} (${hr(q.t)}시)`), h('b', null, fmt(q.med)), h('span', 'dq' + dcls(dq), dtx(dq)));
-    });
-    if (ln.childNodes.length) bf.appendChild(ln);
-    if (s.how === 'keep') bf.appendChild(h('div', null, '24시간 전 숫자가 없어 지금 값 그대로로 냈어요'));
-    const fv = h('div', 'five');
-    if (s.five && s.five.vals && s.five.vals.length) {
-      const v = s.five.vals, last = v[v.length - 1];
-      fv.appendChild(h('div', 't', `5분 차트${D.five_posted ? ' ' + D.five_posted.slice(11, 16) + '까지' : ''} → 다음 정각 ${s.five.pred_rank}위 예상`));
-      const nz = v.filter(x => x > 0);
-      if (nz.length >= 3) {                          // 점이 몇 개 없을 땐(정각 막 지난 때) 선은 안 그림
-      const svg = el('svg', { viewBox: '0 0 240 46', preserveAspectRatio: 'none', role: 'img', 'aria-label': `이번 시간 5분 차트 값 — 마지막 ${last.toFixed(2)}` }, fv);
-      const lo = Math.min(...nz), hi2 = Math.max(...nz), X = i => 4 + i * 232 / 11, Y = x => 40 - (x - lo) / Math.max(1e-9, hi2 - lo) * 32;
-      let dd = '', pen = false; v.forEach((x, i) => { if (!(x > 0)) { pen = false; return; } dd += (pen ? 'L' : 'M') + X(i) + ' ' + Y(x); pen = true; });
-      const pp = el('path', { d: dd, fill: 'none', 'stroke-width': 2, 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }, svg); pp.style.stroke = col(s);
-      const cc = el('circle', { cx: X(v.length - 1), cy: Y(last), r: 3 }, svg); cc.style.fill = col(s);
-      }
-    } else if (D.five_minute != null) {
-      fv.appendChild(h('div', 't', '이번 시간 5분 차트 3위 안에 없어요 — 다음 정각 표엔 숫자가 안 나올 수 있어요'));
-    } else {
-      fv.appendChild(h('div', 't', '이번 시간 5분 차트는 아직 없어요'));
-    }
-    bf.appendChild(fv);
-    p.appendChild(bf);
+    if (s.how === 'keep') p.appendChild(h('div', 'kn', '24시간 전 숫자가 없어서 지금 숫자를 그대로 적었어요.'));
     board.appendChild(p);
   });
 
-  /* 곡별 48시간 + 24시간 */
+  /* 곡별 그래프: 지난 48시간 + 앞으로 24시간 */
   const mult = document.getElementById('mult');
   const charts = [];
   S.forEach(s => {
@@ -365,7 +337,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
         cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.style.opacity = 1;
         tip.replaceChildren(h('div', 'hd', lab(times[i]) + (i > ni ? ' · 예측' : '')));
         if (i <= ni) tip.appendChild(h('div', null, act[i] == null ? '3위 밖(숫자 없음)' : `실제 ${fmt(act[i])}`));
-        else { tip.appendChild(h('div', null, `예측 ${fmt(med[i])} (${sgn(med[i] - s.base)})`)); if (lo[i] != null) tip.appendChild(h('div', 'hd', `범위 ${fmt(lo[i])} ~ ${fmt(hi[i])}`)); }
+        else { tip.appendChild(h('div', null, `예측 ${fmt(med[i])} (지금보다 ${sgn(med[i] - s.base)})`)); if (lo[i] != null) tip.appendChild(h('div', 'hd', `범위 ${fmt(lo[i])} ~ ${fmt(hi[i])}`)); }
         tip.classList.add('show');
         const bw = ch.clientWidth, tw = tip.offsetWidth; let left = X(i) + 12; if (left + tw > bw) left = X(i) - tw - 12; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = '8px';
       };
@@ -376,51 +348,28 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   draw();
   let lastW = mult.clientWidth; window.addEventListener('resize', () => { if (mult.clientWidth !== lastW) { lastW = mult.clientWidth; draw(); } });
 
-  /* 예측 성적 */
-  const st = D.stats || {}, box = document.getElementById('stats');
-  const keys = Object.keys(st);
-  document.getElementById('statSub').textContent = keys.length
-    ? `이 페이지가 미리 낸 '다음 정각' 예측을 나중에 나온 실제 값과 비교했어요. 지금까지 기록 ${D.n_logged}개.`
-    : `아직 채점할 예측이 없어요 — 다음 정각 숫자가 나오면 첫 채점이 돼요. 지금까지 낸 예측 ${D.n_logged}개.`;
-  [['정각 직전', 1, '정각 직전(52분, 5분 차트 반영) → 다음 정각'], ['정각 직후', 1, '정각 직후(6분) → 다음 정각'], ['정각 직후', 3, '정각 직후 → 3시간 뒤'], ['정각 직후', 24, '정각 직후 → 24시간 뒤']].forEach(([w, k, name]) => {
-    const x = st[`${w}|${k}`]; if (!x) return;
-    const c = h('div'); c.append(h('div', 'lb', name), h('div', 'v', `${fmt(x.mdae)}명`), h('div', 'r', `오차 가운데 값 · ${x.n}개 · '그대로'면 ${fmt(x.keep)}명` + (x.cover != null ? ` · 범위 안 ${x.cover}%` : '')));
-    box.appendChild(c);
-  });
-
-  /* 모델별(실전 · 그림자) 다음 정각 실제 성적 */
-  const MODEL_NAMES = { hgb_v1: '처음 모델 (1~24시간을 한 모델로)', e1_ens: '나무 묶음 (시간마다 따로 배움)', e5_mix: '구조 모델 (24시간 창 식 + 나무 보정)', e5_cal: '구조 모델 (24시간 창 식 + 나무 보정)', e8_ens4: '나무 묶음 + 실시간 점유율', 'e5_cal+e9': '구조 모델 + 5분 차트 고침 (정각 직전만)', ens6: '섞은 모델 (부품 6개)', keep: '그대로 유지' };
-  const bm = D.by_model || {}, bmt = document.getElementById('byModel');
-  const bmKeys = Object.keys(bm);
-  if (bmKeys.length) {
-    const BMH = ['모델', '채점한 예측(7일)', '다음 정각 오차', '같은 칸에서 실전과 비교', "'그대로'였다면", '범위 안', '24시간 뒤 오차'];
-    const hr0 = document.createElement('tr'); BMH.forEach(x => hr0.appendChild(h('th', null, x))); bmt.appendChild(hr0);
-    bmKeys.sort((a, b) => (a === D.model ? -1 : b === D.model ? 1 : bm[a].mdae - bm[b].mdae)).forEach(m => {
-      const x = bm[m], r = document.createElement('tr');
-      const pair = m === D.model ? '실전' : (x.pair_n ? `${x.pair_m <= x.pair_prod ? '' : '+'}${Math.round((x.pair_m / Math.max(x.pair_prod, 1) - 1) * 100)}% (짝 ${x.pair_n}개 · ${fmt(x.pair_m)} 대 ${fmt(x.pair_prod)}명)` : '–');
-      [(MODEL_NAMES[m] || m) + (m === D.model ? ' · 실전' : ' · 그림자'), `${x.n}개`, x.mdae != null ? `${fmt(x.mdae)}명` : '채점 기다리는 중', pair, x.keep != null ? `${fmt(x.keep)}명` : '–', x.cover != null ? `${x.cover}%` : '–', x.h24_mdae != null ? `${fmt(x.h24_mdae)}명` : '–'].forEach((v, i) => { const c = h('td', null, v); c.dataset.label = BMH[i]; r.appendChild(c); });
-      bmt.appendChild(r);
-    });
-  } else document.getElementById('byModelWrap').style.display = 'none';
-  if (D.promo && D.promo.model) {        /* 실전 기록으로 실전 모델이 자동으로 바뀐 때 */
-    const pe = document.getElementById('promo');
-    pe.textContent = `실전 모델은 ${D.promo.since}에 '${MODEL_NAMES[D.promo.model] || D.promo.model}'(으)로 자동으로 바뀌었어요 — ${D.promo.why}`;
-    pe.style.display = '';
-  }
+  /* 얼마나 맞았나 — 다음 시간 예측과 나중에 나온 실제 숫자 */
+  const x1 = (D.stats || {})['정각 직후|1'] || (D.stats || {})['정각 직전|1'];
+  document.getElementById('statSub').textContent = x1
+    ? `지금까지 다음 시간 예측 ${x1.n}번을 실제 숫자와 맞춰 봤어요. 절반은 실제와 ${fmt(x1.mdae)}명 안쪽 차이였어요.`
+    : '아직 맞춰 본 예측이 없어요. 다음 정각 숫자가 나오면 채워져요.';
+  const seenR = new Set();
+  const rec = (D.recent || []).slice().sort((a, b) => b.target_t.localeCompare(a.target_t) || b.made.localeCompare(a.made))
+    .filter(e => { const k = e.target_t + '|' + e.key; if (seenR.has(k)) return false; seenR.add(k); return true; });   // 같은 시각 · 같은 곡은 마지막 예측 하나만
   const t = document.getElementById('recent');
-  const RH = ['맞힐 시각', '곡', '언제 낸 예측', '예측', '실제', '차이'];
+  const RH = ['시각', '곡', '예측', '실제', '차이'];
   const head = document.createElement('tr'); RH.forEach(x => head.appendChild(h('th', null, x))); t.appendChild(head);
-  (D.recent || []).forEach(e => {
+  rec.forEach(e => {
     const r = document.createElement('tr');
-    const diff = e.actual != null ? e.actual - e.pred : null;
-    [lab(e.target_t), e.title, `${e.made.slice(5).replace('-', '.')} (${e.when})`, fmt(e.pred), e.actual != null ? fmt(e.actual) : '기다리는 중', diff != null ? sgn(diff) : ''].forEach((x, i) => { const c = h('td', null, String(x)); c.dataset.label = RH[i]; r.appendChild(c); });
+    [lab(e.target_t), e.title, fmt(e.pred), e.actual != null ? fmt(e.actual) : '나오기 전', e.actual != null ? fmt(Math.abs(e.actual - e.pred)) + '명' : ''].forEach((x, i) => { const c = h('td', null, String(x)); c.dataset.label = RH[i]; r.appendChild(c); });
     t.appendChild(r);
   });
-  if ((D.recent || []).length > 12) {     /* 휴대폰: 처음 12개만, 단추로 펼침 */
+  if (rec.length > 12) {     /* 휴대폰: 처음 12개만, 단추로 펼침 */
     const mb = document.getElementById('moreRecent');
     t.classList.add('short'); mb.classList.add('on');
     mb.addEventListener('click', () => { t.classList.remove('short'); mb.classList.remove('on'); });
   }
+  /*LOCAL_ONLY_JS*/
 }).catch(e => { document.getElementById('lede').textContent = '예측 자료를 불러오지 못했어요. 잠시 뒤 새로 고쳐 주세요.'; });
 </script>
 </body>
