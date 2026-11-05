@@ -64,6 +64,8 @@ h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
 .sum .nm { font-weight: 650; line-height: 1.3; }
 .sum .nm small { display: block; font-size: 12px; font-weight: 400; color: var(--ink-2); }
 .sum .v { font-size: 19px; font-weight: 700; text-align: right; }
+.sum .vc { text-align: right; line-height: 1.25; }
+.sum .vc small { display: block; font-size: 12px; color: var(--ink-2); font-weight: 500; white-space: nowrap; }
 .sum .dv { text-align: right; font-weight: 650; }
 .guide { color: var(--ink-2); font-size: 14px; margin: 0 0 10px; }
 .guide b { color: var(--ink); font-weight: 650; }
@@ -226,7 +228,12 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       const n1 = s.path[0]; if (!n1) return;
       const d = n1.med - s.base, r = h('div', 'row'), nm = h('span', 'nm', s.title);
       if (s.artist) nm.appendChild(h('small', null, s.artist));
-      r.append(nm, h('b', 'v', fmt(n1.med)), h('span', 'dv' + dcls(d), dtx(d)));
+      const vc = h('span', 'vc'); vc.appendChild(h('b', 'v', fmt(n1.med)));
+      if (s.nc && s.nc.corr) {                       // 5분 차트로 고친 만큼(처음 예측 → 고친 예측)
+        const b0 = (s.path_base && s.path_base[0]) ? s.path_base[0].med : n1.med - s.nc.corr;
+        vc.appendChild(h('small', 'nc', `처음 ${fmt(b0)} · 5분 차트 ${s.nc.corr > 0 ? '+' : '−'}${fmt(Math.abs(s.nc.corr))}명`));
+      }
+      r.append(nm, vc, h('span', 'dv' + dcls(d), dtx(d)));
       sum.appendChild(r);
     });
   } else sum.appendChild(h('div', 'empty', '지금 실시간 3위 안에 숫자가 있는 곡이 없어요.'));
