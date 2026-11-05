@@ -12,7 +12,7 @@
   color-scheme: light;
   --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
   --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10); --wash: rgba(11,11,11,0.04);
-  --pos: #e34948; --neg: #2a78d6; --good: #1baf7a;
+  --pos: #c62828; --neg: #1a5fb4; --good: #1baf7a;
   --s0: #2a78d6; --s1: #eb6834; --s2: #1baf7a; --s3: #eda100; --s4: #e87ba4; --s5: #008300; --s6: #6250d6; --s7: #e34948;
 }
 @media (prefers-color-scheme: dark) {
@@ -20,7 +20,7 @@
     color-scheme: dark;
     --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10); --wash: rgba(255,255,255,0.05);
-    --pos: #e66767; --neg: #3987e5; --good: #199e70;
+    --pos: #ef7b7b; --neg: #5b9cf0; --good: #199e70;
     --s0: #3987e5; --s1: #d95926; --s2: #199e70; --s3: #c98500; --s4: #d55181; --s5: #008300; --s6: #9085e9; --s7: #e66767;
   }
 }
@@ -28,26 +28,26 @@
   color-scheme: dark;
   --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10); --wash: rgba(255,255,255,0.05);
-  --pos: #e66767; --neg: #3987e5; --good: #199e70;
+  --pos: #ef7b7b; --neg: #5b9cf0; --good: #199e70;
   --s0: #3987e5; --s1: #d95926; --s2: #199e70; --s3: #c98500; --s4: #d55181; --s5: #008300; --s6: #9085e9; --s7: #e66767;
 }
 :root {
-  --tl: #d5d4cd; --bh: #efeee9; --r1: #fbf4d3; --r2: #f3e19a; --r3: #f5c994; --rx: #f8ebeb; --pk: #dcefc8;
-  --night: #e9e9e6; --pred: #efecfb; --predline: #6250d6;
+  --tl: #d5d4cd; --bh: #efeee9; --pk: #dcefc8; --night: #e9e9e6; --pred: #efecfb; --predline: #6250d6; --zero: #8e44ad;
+  --r1: #fbf5db; --r2: #f9e18c; --r3: #f7c58a; --rx: #faeeee; --r11: #f4e1df; --r21: #f1e0d0; --r31: #eaf1e0; --r41: #dde2f1; --r51: #afc4e3;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --tl: #3b3b38; --bh: #232322; --r1: #3a3520; --r2: #574a17; --r3: #5a3a1a; --rx: #3b2a2b; --pk: #1e3a22;
-    --night: #252524; --pred: #25213f; --predline: #9085e9;
+    --tl: #3b3b38; --bh: #232322; --pk: #1e3a22; --night: #252524; --pred: #25213f; --predline: #9085e9; --zero: #c39bd3;
+    --r1: #3a3520; --r2: #574a17; --r3: #5a3a1a; --rx: #3b2a2b; --r11: #45292b; --r21: #403325; --r31: #2d3828; --r41: #2b3047; --r51: #2a4366;
   }
 }
 :root[data-theme="dark"] {
-  --tl: #3b3b38; --bh: #232322; --r1: #3a3520; --r2: #574a17; --r3: #5a3a1a; --rx: #3b2a2b; --pk: #1e3a22;
-  --night: #252524; --pred: #25213f; --predline: #9085e9;
+  --tl: #3b3b38; --bh: #232322; --pk: #1e3a22; --night: #252524; --pred: #25213f; --predline: #9085e9; --zero: #c39bd3;
+  --r1: #3a3520; --r2: #574a17; --r3: #5a3a1a; --rx: #3b2a2b; --r11: #45292b; --r21: #403325; --r31: #2d3828; --r41: #2b3047; --r51: #2a4366;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; font-size: 15px; line-height: 1.55; -webkit-text-size-adjust: 100%; }
+body { background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; font-size: 15px; line-height: 1.55; -webkit-text-size-adjust: 100%; word-break: keep-all; overflow-wrap: break-word; }
 .wrap { max-width: 980px; margin: 0 auto; padding: 26px 16px 56px; }
 h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; letter-spacing: -0.01em; }
 h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
@@ -57,20 +57,20 @@ h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
 .five { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
 .five .t { font-size: 12px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
 .five svg { display: block; width: 100%; height: 46px; overflow: visible; }
-.up { color: var(--pos); } .down { color: var(--neg); }
+.up { color: var(--pos); } .down { color: var(--neg); } .zero { color: var(--zero); }
 .tag { display: inline-block; font-size: 11.5px; color: var(--ink-2); border: 1px solid var(--border); border-radius: 5px; padding: 0 6px; margin-left: 6px; font-weight: 500; }
 .guide { color: var(--ink-2); font-size: 13px; margin: -6px 0 12px; }
 .guide b { color: var(--ink); font-weight: 650; }
 .guide i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin: 0 3px 0 1px; }
-.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(286px, 1fr)); gap: 12px; margin-bottom: 14px; align-items: start; }
+.board { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(286px, 100%), 1fr)); gap: 12px; margin-bottom: 14px; align-items: start; }
 .bp { background: var(--surface); border: 1px solid var(--tl); border-radius: 8px; overflow: hidden; }
-.bp .bh { padding: 11px 10px 9px; text-align: center; border-bottom: 1px solid var(--tl); }
+.bp .bh { padding: 8px 10px 7px; text-align: center; border-bottom: 1px solid var(--tl); }
 .bp .bt { font-size: 16px; font-weight: 700; line-height: 1.3; word-break: keep-all; }
 .bp .ba { font-size: 12.5px; color: var(--ink-2); margin-top: 1px; }
 .bp.rs .bh { background: #1c2733; border-bottom-color: #1c2733; }
 .bp.rs .bt { color: #fff; } .bp.rs .ba { color: #c5d0d9; }
 table.b5 { table-layout: fixed; font-size: 13.5px; }
-table.b5 th, table.b5 td { text-align: center; padding: 3px 2px; height: 25px; border: 1px solid var(--tl); white-space: nowrap; overflow: hidden; }
+table.b5 th, table.b5 td { text-align: center; padding: 2px; height: 25px; line-height: 1.3; border: 1px solid var(--tl); white-space: nowrap; overflow: hidden; }
 table.b5 tr > :first-child { border-left: 0; }
 table.b5 tr > :last-child { border-right: 0; }
 table.b5 tbody tr:last-child td { border-bottom: 0; }
@@ -89,7 +89,15 @@ table.b5 tr td.r1 { background: var(--r1); }
 table.b5 tr td.r2 { background: var(--r2); }
 table.b5 tr td.r3 { background: var(--r3); }
 table.b5 tr td.rx { background: var(--rx); }
+table.b5 tr td.r11 { background: var(--r11); }
+table.b5 tr td.r21 { background: var(--r21); }
+table.b5 tr td.r31 { background: var(--r31); }
+table.b5 tr td.r41 { background: var(--r41); }
+table.b5 tr td.r51 { background: var(--r51); }
 table.b5 tr td.pk { background: var(--pk); }
+table.b5 td.d.zero { color: var(--zero); }
+table.b5 tr.meta .sat { color: var(--neg); }
+table.b5 tr.meta .sun { color: var(--pos); }
 table.b5 tr.pred td.r.fr { box-shadow: inset 0 0 0 1px var(--predline); }
 .pill { display: inline-block; font-size: 10.5px; font-weight: 700; line-height: 16px; color: #fff; background: var(--predline); border-radius: 4px; padding: 0 5px; }
 .bx { display: none; width: 100%; padding: 8px 10px; font: inherit; font-size: 13px; color: var(--ink-2); background: transparent; border: 0; border-top: 1px solid var(--tl); cursor: pointer; }
@@ -103,6 +111,13 @@ table.b5 tr.pred td.r.fr { box-shadow: inset 0 0 0 1px var(--predline); }
   .bp:not(.all) tr.old { display: none; }
   .bx { display: block; }
 }
+@media (min-width: 641px) {
+  table.b5 th, table.b5 td { height: 22px; line-height: 1.2; padding: 1px 2px; }   /* 차트봇 그림처럼 22px 줄 — 예측 줄이 첫 화면에 */
+  .bp { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; }   /* 제목이 두 줄인 곡이 있어도 세 표 줄이 나란히 */
+  .bp .bh { display: flex; flex-direction: column; justify-content: center; }
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill { color: #17133a; } }
+:root[data-theme="dark"] .pill { color: #17133a; }
 .chart { position: relative; width: 100%; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 svg text { font-family: inherit; fill: var(--muted); font-size: 11.5px; }
@@ -122,7 +137,7 @@ svg .dot { stroke: var(--surface); stroke-width: 2; }
 .lkey { width: 16px; height: 2px; border-radius: 1px; display: inline-block; background: var(--ink-2); }
 .lkey.dash { background: none; height: 0; border-top: 2px dashed var(--ink-2); }
 .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; background: var(--ink-2); opacity: .25; }
-.mult { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+.mult { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr)); gap: 16px; }
 .mult h3 { font-size: 13.5px; margin: 0 0 4px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
 .mult h3 i { width: 10px; height: 10px; border-radius: 50%; }
 .tip { position: absolute; pointer-events: none; opacity: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.10); padding: 7px 10px; font-size: 12.5px; min-width: 150px; z-index: 2; transition: opacity .08s; }
@@ -163,7 +178,7 @@ td { font-variant-numeric: tabular-nums; }
 <div class="wrap">
   <h1>멜론 다음 시간 예측</h1>
   <p class="lede" id="lede"></p>
-  <p class="guide">차트봇 '이용자수 추이' 표와 같은 꼴이에요. <b>맨 아래 보라색 줄 = 다음 정각 예측</b> (큰 숫자 = 예측값, 작은 숫자 = 10번 중 8번 들어오는 범위, 순위 = 5분 차트로 본 예상 순위). <i style="background:var(--pk)"></i>최고 이용자수 · <i style="background:var(--night)"></i>새벽 2~6시</p>
+  <p class="guide"><b>맨 아래 보라색 줄 = 다음 정각 예측</b> · 작은 숫자 = 예측 범위 · <i style="background:var(--pk)"></i>최고 · <i style="background:var(--night)"></i>새벽 2~6시</p>
   <div class="board" id="board"></div>
 
   <section class="card">
@@ -186,6 +201,7 @@ td { font-variant-numeric: tabular-nums; }
   <section class="card">
     <h2>읽는 법</h2>
     <ul class="notes" id="notes">
+      <li>맨 위 표는 써클차트 갤러리 차트봇 '이용자수 추이' 그림과 같은 꼴이에요(곡마다 최근 25시간, 3위 밖이던 시간은 이용자수 빈칸, 증감은 마지막으로 보였던 값과의 차이). 맨 아래 보라색 줄이 다음 정각 예측이에요 — 큰 숫자 = 예측 가운데 값, 작은 숫자 = 10번 중 8번 들어오는 범위, 순위 칸 = 그 시간 5분 차트로 본 예상 순위('–' = 5분 차트 3위 밖). 휴대폰에선 최근 12시간이 먼저 보여요.</li>
       <li>숫자는 멜론 곡의 '24시간 이용자수'(그 시각까지 최근 24시간 동안 들은 사람 수)예요. 써클차트 갤러리 차트봇의 '이용자수 추이' 글에서 매시간 가져와요. 실시간 3위 안 곡만 숫자가 나와서 그 곡들만 예측해요.</li>
       <li>숫자는 매시 6분(정각 숫자가 나온 직후)과 52분(5분 차트로 그 시간 흐름을 본 정각 직전)쯤 새로 올라와요(사이트에 반영되기까지 1~2분). 이 페이지는 5분마다 새로 읽어요.</li>
       <li>5분 차트: 같은 차트봇의 '멜론 5분 차트' 글. 그 시간 정각부터 5분마다 곡별 값(그 시간 동안 쌓인 몫)이에요. 오르면 이번 시간에 사람이 몰린다는 뜻이라 다음 정각 숫자에 반영돼요.</li>
@@ -211,13 +227,16 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   const lastRank = s => { const r = s.hist.length ? s.hist[s.hist.length - 1][2] : null; return r == null ? 99 : r; };
   const S = D.songs.slice().sort((a, b) => (isR(b) - isR(a)) || (lastRank(a) - lastRank(b)) || (b.base - a.base));   // 리센느 먼저, 그다음 지금 순위
   document.getElementById('lede').textContent =
-    `${D.built} 갱신 · 자료 ${lab(D.latest)}까지 · 다음 정각 ${lab(D.next)}` + (D.five_minute != null ? ` · 5분 차트 ${D.five_posted.slice(11, 16)}까지 반영` : ' · 이번 시간 5분 차트는 아직 없음');
+    `${D.built.slice(11)} 갱신 · 자료 ${lab(D.latest)}까지 · 다음 정각 ${lab(D.next)}` + (D.five_minute != null ? ` · 5분 차트 ${D.five_posted.slice(11, 16)}까지 반영` : ' · 이번 시간 5분 차트는 아직 없음');
 
   /* 차트봇 '이용자수 추이' 표 꼴 — 곡마다 최근 25시간 + 맨 아래 다음 정각 예측 줄 */
   const WK = '일월화수목금토';
   const dlab = t => `${t.slice(0, 4)}.${t.slice(5, 7)}.${t.slice(8, 10)}(${WK[new Date(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10)).getDay()]})`;
-  const rc = v => v == null ? '' : v <= 1 ? 'r1' : v === 2 ? 'r2' : v === 3 ? 'r3' : 'rx';
-  const dcls = d => d > 0 ? ' up' : d < 0 ? ' down' : '';
+  const rc = v => v == null ? '' : v <= 1 ? 'r1' : v === 2 ? 'r2' : v === 3 ? 'r3' : v <= 10 ? 'rx'
+    : v <= 20 ? 'r11' : v <= 30 ? 'r21' : v <= 40 ? 'r31' : v <= 50 ? 'r41' : 'r51';     // 차트봇 칸 색 9단계
+  const dcls = d => d > 0 ? ' up' : d < 0 ? ' down' : ' zero';
+  const dtx = d => d === 0 ? '0' : sgn(d);          // 차트봇은 0 을 '0'(보라)으로
+  const ds = t => { const w = new Date(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10)).getDay(); return h('span', w === 6 ? 'sat' : w === 0 ? 'sun' : null, dlab(t)); };
   const board = document.getElementById('board');
   if (!S.length) board.appendChild(h('div', 'empty', '지금 실시간 3위 안에 숫자가 있는 곡이 없어요.'));
   S.forEach(s => {
@@ -234,7 +253,8 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     const thd = document.createElement('thead');
     const addTh = (cls, cells) => { const r = document.createElement('tr'); r.className = cls; cells.forEach(([x, span]) => { const c = h('th', null, x); if (span) c.colSpan = span; r.appendChild(c); }); thd.appendChild(r); };
     addTh('meta', [[`최고 이용자수 : ${fmt(s.peak != null ? s.peak : s.base)}`, 5]]);
-    addTh('meta', [[`${dlab(rows.length ? rows[0][0] : s.base_t)} ~ ${dlab(n1 ? n1.t : s.base_t)}`, 5]]);
+    const t0 = rows.length ? rows[0][0] : s.base_t, tN = rows.length ? rows[rows.length - 1][0] : s.base_t;   // 날짜 범위 = 실제 줄(차트봇처럼)
+    { const r = document.createElement('tr'); r.className = 'meta'; const c = h('th'); c.colSpan = 5; c.append(ds(t0), document.createTextNode(' ~ '), ds(tN)); r.appendChild(c); thd.appendChild(r); }
     addTh('cols', [['시간'], ['순위'], ['T100'], ['이용자수'], ['증감']]);
     tb.appendChild(thd);
     const tbd = document.createElement('tbody');
@@ -250,13 +270,14 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       cell(tr, t1 != null ? String(t1) : '', 'r ' + rc(t1));
       cell(tr, u != null ? fmt(u) : '', 'u' + (u != null && u === s.peak ? ' pk' : ''));
       const d = u != null && prev != null ? u - prev : null;
-      cell(tr, d != null ? sgn(d) : '', 'd' + (d != null ? dcls(d) : ''));
+      cell(tr, d != null ? dtx(d) : '', 'd' + (d != null ? dcls(d) : ''));
       if (u != null) prev = u;
       tbd.appendChild(tr);
     });
     if (n1) {                                          // 다음 정각 예측 줄
       const tr = document.createElement('tr'); tr.className = 'pred';
-      cell(tr, '', 't').append(h('b', null, `${hr(n1.t)}시`), h('span', 'pill', '예측'));
+      const tc = cell(tr, '', 't'); tc.append(h('b', null, `${hr(n1.t)}시`), h('span', 'pill', '예측'));
+      if (n1.t.slice(0, 10) !== tN.slice(0, 10)) tc.title = dlab(n1.t);
       const fr = s.five && s.five.pred_rank;
       const rcell = cell(tr, fr ? String(fr) : (D.five_minute != null ? '–' : ''), 'r' + (fr ? ' fr ' + rc(fr) : ''));
       rcell.title = fr ? '5분 차트로 본 다음 정각 예상 순위' : (D.five_minute != null ? '이번 시간 5분 차트 3위 안에 없음' : '');
@@ -264,14 +285,14 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       const uc = cell(tr, '', 'u'); uc.appendChild(h('b', null, fmt(n1.med)));
       if (n1.lo != null && n1.hi != null) { const sm = h('small'); sm.append(document.createTextNode(fmt(n1.lo) + '~'), document.createElement('wbr'), document.createTextNode(fmt(n1.hi))); uc.appendChild(sm); }
       const d = n1.med - s.base;
-      cell(tr, sgn(d), 'd' + dcls(d));
+      cell(tr, dtx(d), 'd' + dcls(d));
       tbd.appendChild(tr);
     }
     tb.appendChild(tbd);
     p.appendChild(tb);
     const nOld = rows.filter((_, i) => rows.length - i > 12).length;
     if (nOld) {
-      const bx = h('button', 'bx', `앞 ${nOld}시간 더 보기 (25시간 표)`); bx.type = 'button';
+      const bx = h('button', 'bx', `앞 ${nOld}시간 더 보기 (${rows.length}시간 표)`); bx.type = 'button';
       bx.addEventListener('click', () => { p.classList.add('all'); bx.remove(); });
       p.appendChild(bx);
     }
@@ -280,7 +301,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     [[3, '3시간 뒤'], [24, '내일 이 시각']].forEach(([k, name]) => {
       const q = s.path[k - 1]; if (!q) return;
       const dq = q.med - s.base;
-      ln.append(h('span', null, `${name} (${hr(q.t)}시)`), h('b', null, fmt(q.med)), h('span', 'dq' + dcls(dq), sgn(dq)));
+      ln.append(h('span', null, `${name} (${hr(q.t)}시)`), h('b', null, fmt(q.med)), h('span', 'dq' + dcls(dq), dtx(dq)));
     });
     if (ln.childNodes.length) bf.appendChild(ln);
     if (s.how === 'keep') bf.appendChild(h('div', null, '24시간 전 숫자가 없어 지금 값 그대로로 냈어요'));
