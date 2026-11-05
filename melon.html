@@ -363,11 +363,12 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   const rec = (D.recent || []).slice().sort((a, b) => b.target_t.localeCompare(a.target_t) || b.made.localeCompare(a.made))
     .filter(e => { const k = e.target_t + '|' + e.key; if (seenR.has(k)) return false; seenR.add(k); return true; });   // 같은 시각 · 같은 곡은 마지막 예측 하나만
   const t = document.getElementById('recent');
-  const RH = ['시각', '곡', '예측', '실제', '차이'];
+  const RH = ['시각', '곡', '예측', '실제', '차이(실제−예측)'];
   const head = document.createElement('tr'); RH.forEach(x => head.appendChild(h('th', null, x))); t.appendChild(head);
   rec.forEach(e => {
     const r = document.createElement('tr');
-    [lab(e.target_t), e.title, fmt(e.pred), e.actual != null ? fmt(e.actual) : '나오기 전', e.actual != null ? fmt(Math.abs(e.actual - e.pred)) + '명' : ''].forEach((x, i) => { const c = h('td', null, String(x)); c.dataset.label = RH[i]; r.appendChild(c); });
+    const df = e.actual != null ? e.actual - e.pred : null;          // + = 실제가 더 많았음(빨강) · − = 실제가 더 적었음(파랑)
+    [lab(e.target_t), e.title, fmt(e.pred), e.actual != null ? fmt(e.actual) : '나오기 전', df != null ? sgn(df) + '명' : ''].forEach((x, i) => { const c = h('td', null, String(x)); c.dataset.label = RH[i]; if (i === 4 && df) c.className = df > 0 ? 'up' : 'down'; r.appendChild(c); });
     t.appendChild(r);
   });
   if (rec.length > 12) {     /* 휴대폰: 처음 12개만, 단추로 펼침 */
