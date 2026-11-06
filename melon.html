@@ -419,7 +419,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 12) ends[k].y = ends[k - 1].y + 12;
     ends.forEach(e => { el('text', { x: W - R + 6, y: e.y + 3.5, style: 'fill: var(--ink-2)' }, svg).textContent = e.s; });
     box.appendChild(svg);
-    box.appendChild(h('div', 'cap', `${SF.me} 선(보라)이 초록 점선보다 위에 있으면 안전해요 (대략)`));
+    box.appendChild(h('div', 'cap', `보라(${SF.me})가 초록 점선 아래로 내려가면 TOP100 1위를 ${SF.rival}에게 내줄 수 있어요 (그 시간 마지막 값 기준, 대략)`));
     rfe.prepend(box);
   } catch (e) { /* 그래프가 안 그려져도 페이지는 그대로 */ }
   /*LOCAL_ONLY_JS*/
