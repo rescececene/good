@@ -405,7 +405,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     }
     [[2, '15분'], [5, '30분'], [8, '45분'], [11, '60분']].forEach(([i, s]) => { el('text', { x: X(i), y: H - 5, 'text-anchor': 'middle' }, svg).textContent = s; });
     const ends = [];
-    [[sa, 'var(--good)', '6 4', '안전 라인'], [SF.rvs, 'var(--muted)', null, SF.rival], [SF.mv, 'var(--predline)', null, SF.me]].forEach(([a, c, dash, nm]) => {
+    [[sa, 'var(--good)', '6 4', SF.upper ? '안전 라인 최대' : '안전 라인'], [SF.rvs, 'var(--muted)', null, SF.rv_label || SF.rival], [SF.mv, 'var(--predline)', null, SF.me]].forEach(([a, c, dash, nm]) => {
       const p = a.map((v, i) => v == null ? null : [X(i), Y(v)]).filter(Boolean);
       if (!p.length) return;
       const at = { d: 'M' + p.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' L'), fill: 'none', stroke: c, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
