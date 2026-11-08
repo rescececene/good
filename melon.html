@@ -183,6 +183,14 @@ td { font-variant-numeric: tabular-nums; }
   .more.on { display: block; }
 }
 .more { display: none; margin: 10px auto 0; padding: 8px 16px; font: inherit; font-size: 13.5px; color: var(--ink); background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+.nowt { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.nowt th { color: var(--muted); font-weight: 500; font-size: 12px; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.nowt td { text-align: right; padding: 7px 6px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nowt th:first-child, .nowt td:first-child { text-align: left; white-space: normal; }
+.nowt .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.nowt .art { display: block; color: var(--muted); font-size: 11.5px; margin: 1px 0 0 14px; }
+@media (max-width: 560px) { .nowt { font-size: 12.5px; } .nowt th { white-space: normal; } .nowt td { padding: 7px 3px; } .nowt th { padding: 4px 3px; } }
+.nowg svg { width: 100%; height: auto; display: block; margin-top: 12px; }
 .refm { color: var(--muted); font-size: 11.5px; line-height: 1.6; margin: 18px 2px 0; }
 .refm div + div { margin-top: 2px; }
 .fm5 { margin: 0 0 10px; max-width: 360px; }
@@ -205,6 +213,13 @@ td { font-variant-numeric: tabular-nums; }
   <div class="sum" id="sum"></div>
   <p class="guide" id="guide"><b>표 맨 아래 보라색 줄이 예측</b>이에요.</p>
   <div class="board" id="board"></div>
+
+  <section class="card" id="nowCard" hidden>
+    <h2>지금 듣는 사람</h2>
+    <p class="sub" id="nowSub"></p>
+    <div class="tbl-wrap"><table class="nowt" id="nowTbl"></table></div>
+    <div class="nowg" id="nowG"></div>
+  </section>
 
   <section class="card">
     <h2>그래프로 보기</h2>
@@ -488,6 +503,69 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     t.classList.add('short'); mb.classList.add('on');
     mb.addEventListener('click', () => { t.classList.remove('short'); mb.classList.remove('on'); });
   }
+  /* 지금 듣는 사람 (멜론 앱 현재 감상자수, 10분마다 — nowlisten.payload) */
+  const NW = D.nowl;
+  if (NW && NW.rows && NW.rows.length) try {
+    document.getElementById('nowCard').hidden = false;
+    const tk = s => (s || '').replace(/[^0-9A-Za-z가-힣]/g, '').toLowerCase();
+    const short = s => (s || '').replace(/ \(.*\)$/, '');
+    const slotOf = {}; (D.songs || []).forEach(s => { slotOf[tk(s.title)] = s.slot; });
+    const used = new Set(Object.values(slotOf).map(v => v % 8)); let nx = 0;
+    const colOf = {};
+    NW.rows.forEach(r => {
+      let sl = slotOf[tk(r.title)];
+      if (sl == null) { while (used.has(nx % 8) && nx < 16) nx++; sl = nx++; used.add(sl % 8); }
+      colOf[r.id] = `var(--s${sl % 8})`;
+    });
+    const hh = +NW.t.slice(11, 13), mm = +NW.t.slice(14, 16);
+    document.getElementById('nowSub').textContent = `멜론 앱에서 곡을 누르면 나오는 '이 곡은 지금 N명이 듣고 있어요' 숫자예요. 10분마다 바뀌어요. (${hh}시${mm ? ' ' + mm + '분' : ''} 기준${NW.old ? ' · 한동안 새 숫자를 못 받았어요' : ''})`;
+    const tb = document.getElementById('nowTbl');
+    const hd = h('tr'); ['곡', '지금', '10분 전보다', '1시간 전보다'].forEach(s => hd.appendChild(h('th', null, s))); tb.appendChild(hd);
+    const cl = n => n == null || n === 0 ? null : n > 0 ? 'up' : 'down';
+    NW.rows.forEach(r => {
+      const tr = h('tr'), c0 = h('td');
+      const dt = h('i', 'dot'); dt.style.background = NW.series[r.id] ? colOf[r.id] : 'transparent'; c0.appendChild(dt);
+      c0.appendChild(document.createTextNode(short(r.title))); c0.appendChild(h('span', 'art', short(r.artist)));
+      tr.appendChild(c0);
+      const c1 = h('td'); c1.appendChild(h('b', null, fmt(r.now) + '명')); tr.appendChild(c1);
+      [r.d10, r.d60].forEach(v => tr.appendChild(h('td', cl(v), sgn(v))));
+      tb.appendChild(tr);
+    });
+    const ids = Object.keys(NW.series).filter(id => NW.series[id].some(v => v != null));
+    const i0 = ids.length ? Math.min(...ids.map(id => NW.series[id].findIndex(v => v != null))) : 0;
+    const N = NW.times.length - i0;
+    const gbox = document.getElementById('nowG');
+    if (ids.length && N >= 3) {
+      const all = ids.flatMap(id => NW.series[id].slice(i0)).filter(v => v != null);
+      let lo = Math.min(...all), hi = Math.max(...all); const pd = (hi - lo) * 0.12 || 300; lo = Math.max(0, lo - pd); hi += pd;
+      const W = Math.max(320, Math.min(760, gbox.clientWidth || 360)), H = W < 500 ? 200 : 230, L = 46, R = 124, T = 10, B = 22;
+      const X = i => L + (W - L - R) * (i - i0) / (N - 1), Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+      const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '곡별 지금 듣는 사람 수, 최근 흐름' });
+      const st = niceStep(hi - lo);
+      for (let v = Math.ceil(lo / st) * st; v <= hi; v += st) {
+        el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--grid)', 'stroke-width': 1 }, svg);
+        txt(svg, L - 5, Y(v) + 4, fmt(v), null, 'end');
+      }
+      const every = N > 36 ? 3 : 1;
+      NW.times.forEach((t, i) => { if (i >= i0 && t.endsWith(':00') && +t.slice(0, 2) % every === 0) txt(svg, X(i), H - 6, +t.slice(0, 2) + '시', null, 'middle'); });
+      const ends = [];
+      ids.forEach(id => {
+        const a = NW.series[id]; let d = '', pen = false;
+        a.forEach((v, i) => { if (i < i0 || v == null) { pen = false; return; } d += (pen ? ' L' : ' M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; });
+        el('path', { d: d.trim(), fill: 'none', stroke: colOf[id], 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+        const li = a.map((v, i) => v == null ? -1 : i).filter(i => i >= 0).pop();
+        el('circle', { cx: X(li), cy: Y(a[li]), r: 3, fill: colOf[id] }, svg);
+        const r = NW.rows.find(x => x.id === id), nm = short(r ? r.title : '');
+        ends.push({ y: Y(a[li]), s: `${nm.length > 7 ? nm.slice(0, 6) + '…' : nm} ${fmt(a[li])}` });
+      });
+      ends.sort((a, b) => a.y - b.y);
+      for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 13) ends[k].y = ends[k - 1].y + 13;
+      ends.forEach(e => txt(svg, W - R + 6, e.y + 4, e.s).setAttribute('style', 'fill: var(--ink-2)'));
+      gbox.appendChild(svg);
+    } else {
+      gbox.appendChild(h('p', 'sub', '그래프는 숫자가 30분 넘게 쌓이면 보여요.'));
+    }
+  } catch (e) { /* 안 그려져도 페이지는 그대로 */ }
   /* 맨 아래 참고 지표(With · 백화요란) */
   const RF = D.ref || [], rfe = document.getElementById('refm');
   if (RF.length) {
