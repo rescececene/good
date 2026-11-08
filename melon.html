@@ -140,6 +140,10 @@ svg .dot { stroke: var(--surface); stroke-width: 2; }
 .lkey.wk { background: none; height: 0; border-top: 2px dotted var(--muted); }
 svg .ln.wk { stroke: var(--muted); stroke-width: 1.6; stroke-dasharray: 2 4; }
 table.b5 td.w { font-size: 12.5px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 0 0 10px; }
+.seg button { font: inherit; font-size: 13px; padding: 5px 16px; background: transparent; color: var(--ink-2); border: 0; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); font-weight: 650; }
 .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; background: var(--ink-2); opacity: .25; }
 .mult { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr)); gap: 16px; }
 .mult h3 { font-size: 13.5px; margin: 0 0 4px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
@@ -190,6 +194,7 @@ td { font-variant-numeric: tabular-nums; }
   <section class="card">
     <h2>그래프로 보기</h2>
     <p class="sub">실선은 실제 숫자, 점선은 예측이에요. 실제 숫자는 대개 옅은 색 띠 안에 들어와요.</p>
+    <div class="seg" id="span" hidden><button type="button" data-v="2" aria-pressed="true">2일</button><button type="button" data-v="7" aria-pressed="false">1주일</button></div>
     <div class="legend"><span><i class="lkey"></i>실제</span><span><i class="lkey dash"></i>예측</span><span><i class="sw"></i>예측 범위</span><span id="wkLeg" hidden><i class="lkey wk"></i>지난주 같은 요일 · 시간</span></div>
     <div class="mult" id="mult"></div>
   </section>
@@ -331,7 +336,10 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     board.appendChild(p);
   });
 
-  /* 곡별 그래프: 지난 48시간 + 앞으로 24시간 */
+  /* 곡별 그래프: 지난 48시간(1주일 단추 = 지난 7일) + 앞으로 24시간 */
+  let VIEW = 2;
+  const tAdd = (t, k) => { const d = new Date(Date.UTC(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10), +t.slice(11, 13) + k)), p2 = n => String(n).padStart(2, '0');
+    return `${d.getUTCFullYear()}-${p2(d.getUTCMonth() + 1)}-${p2(d.getUTCDate())} ${p2(d.getUTCHours())}`; };
   const mult = document.getElementById('mult');
   const charts = [];
   S.forEach(s => {
@@ -343,25 +351,31 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     charts.forEach(({ s, ch, tip }) => {
       ch.querySelector('svg')?.remove();
       const W = ch.clientWidth || 300, H = 220, m = { t: 10, r: 8, b: 26, l: 44 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
-      const times = s.hist.map(x => x[0]).concat(s.path.map(p => p.t));
-      const act = s.hist.map(x => x[1]).concat(s.path.map(() => null));
-      const med = s.hist.map(() => null).concat(s.path.map(p => p.med)); med[s.hist.length - 1] = s.base;
-      const lo = s.hist.map(() => null).concat(s.path.map(p => p.lo)), hi = s.hist.map(() => null).concat(s.path.map(p => p.hi));
-      const wk = s.wk && s.wk.length === times.length ? s.wk : times.map(() => null);   // 지난주 같은 요일 · 시간
+      const wv = VIEW === 7 && s.u14 && s.u14.length === 336;          // 1주일: u14 뒤 168칸 = 지난 7일, 앞 168칸 = 그 지난주
+      const lt = s.hist[s.hist.length - 1][0];
+      const past = wv ? s.u14.slice(168).map((v, j) => [tAdd(lt, j - 167), v]) : s.hist.map(x => [x[0], x[1]]);
+      const okWk = s.wk && s.wk.length === s.hist.length + s.path.length;
+      const pastWk = wv ? s.u14.slice(0, 168) : okWk ? s.wk.slice(0, s.hist.length) : s.hist.map(() => null);
+      const P = past.length;
+      const times = past.map(x => x[0]).concat(s.path.map(p => p.t));
+      const act = past.map(x => x[1]).concat(s.path.map(() => null));
+      const med = past.map(() => null).concat(s.path.map(p => p.med)); med[P - 1] = s.base;
+      const lo = past.map(() => null).concat(s.path.map(p => p.lo)), hi = past.map(() => null).concat(s.path.map(p => p.hi));
+      const wk = pastWk.concat(okWk ? s.wk.slice(s.hist.length) : s.path.map(() => null));   // 지난주 같은 요일 · 시간
       const vals = [...act, ...med, ...lo, ...hi, ...wk].filter(v => v != null);
       const vmin = Math.min(...vals), vmax = Math.max(...vals), span = Math.max(1000, vmax - vmin), step = niceStep(span);
       const y0 = Math.floor((vmin - span * .05) / step) * step, y1 = Math.ceil((vmax + span * .05) / step) * step;
       const N = times.length, X = i => m.l + i * pw / (N - 1), Y = v => m.t + ph * (1 - (v - y0) / (y1 - y0));
-      const svg = el('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': s.title + ' 지난 48시간과 앞으로 24시간' });
+      const svg = el('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': s.title + (wv ? ' 지난 7일' : ' 지난 48시간') + '과 앞으로 24시간' });
       ch.prepend(svg);
       for (let v = y0; v <= y1 + 1e-6; v += step) { el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: 'grid' }, svg); txt(svg, m.l - 6, Y(v) + 4, tickLab(v, step), 'tick', 'end'); }
-      times.forEach((t, i) => { if (hr(t) === 0) { el('line', { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg); txt(svg, X(i) + 3, m.t + ph + 16, `${+t.slice(5, 7)}.${t.slice(8, 10)}`, 'day', 'start'); } });
+      times.forEach((t, i) => { if (hr(t) === 0) { el('line', { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg); txt(svg, X(i) + 3, m.t + ph + 16, pw * 24 / (N - 1) < 40 ? `${+t.slice(8, 10)}일` : `${+t.slice(5, 7)}.${t.slice(8, 10)}`, 'day', 'start'); } });
       const seg = []; const band = () => { if (seg.length > 1) { const pts = seg.map(i => `${X(i)},${Y(hi[i])}`).concat(seg.slice().reverse().map(i => `${X(i)},${Y(lo[i])}`)); const pg = el('polygon', { points: pts.join(' '), class: 'band' }, svg); pg.style.fill = col(s); } seg.length = 0; };
       times.forEach((t, i) => { if (lo[i] != null && hi[i] != null) seg.push(i); else band(); }); band();
       const line = (arr, cls) => { let d = '', pen = false; arr.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; }); const p = el('path', { d, class: cls }, svg); p.style.stroke = col(s); };
       { let d = '', pen = false; wk.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; }); if (d) el('path', { d, class: 'ln wk' }, svg); }
       line(med, 'ln fc'); line(act, 'ln');
-      const ni = s.hist.length - 1; el('line', { x1: X(ni), x2: X(ni), y1: m.t, y2: m.t + ph, class: 'now' }, svg); txt(svg, X(ni) + 4, m.t + 10, '지금', 'note');
+      const ni = P - 1; el('line', { x1: X(ni), x2: X(ni), y1: m.t, y2: m.t + ph, class: 'now' }, svg); txt(svg, X(ni) + 4, m.t + 10, '지금', 'note');
       const c1 = el('circle', { cx: X(ni + 1), cy: Y(s.path[0].med), r: 4, class: 'dot' }, svg); c1.style.fill = col(s);
       const cross = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ph, class: 'cross' }, svg);
       const hit = el('rect', { x: m.l, y: 0, width: pw, height: H, fill: 'transparent' }, svg);
@@ -380,8 +394,17 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show);
       hit.addEventListener('pointerleave', () => { cross.style.opacity = 0; tip.classList.remove('show'); });
     });
+    document.getElementById('wkLeg').hidden = !mult.querySelector('path.ln.wk');
   }
-  if (S.some(s => (s.wk || []).some(v => v != null))) document.getElementById('wkLeg').hidden = false;
+  const spanEl = document.getElementById('span');
+  if (S.some(s => (s.u14 || []).some(v => v != null))) {   // 지난 14일 숫자가 있는 판(live.json)일 때만 단추
+    spanEl.hidden = false;
+    try { if (localStorage.getItem('melonSpan') === '7') VIEW = 7; } catch (e) {}
+    const sync = () => spanEl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.v === VIEW)));
+    sync();
+    spanEl.addEventListener('click', e => { const b = e.target.closest('button'); if (!b || +b.dataset.v === VIEW) return;
+      VIEW = +b.dataset.v; sync(); try { localStorage.setItem('melonSpan', String(VIEW)); } catch (e2) {} draw(); });
+  }
   draw();
   let lastW = mult.clientWidth; window.addEventListener('resize', () => { if (mult.clientWidth !== lastW) { lastW = mult.clientWidth; draw(); } });
 
