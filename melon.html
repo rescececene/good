@@ -147,6 +147,7 @@ table.b5 td.w { font-size: 12.5px; }
 .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; background: var(--ink-2); opacity: .25; }
 .mult { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr)); gap: 16px; }
 .mult h3 { font-size: 13.5px; margin: 0 0 4px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
+.mult h3 small { color: var(--muted); font-weight: 400; font-size: 12px; }
 .mult h3 i { width: 10px; height: 10px; border-radius: 50%; }
 .tip { position: absolute; pointer-events: none; opacity: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.10); padding: 7px 10px; font-size: 12.5px; min-width: 150px; z-index: 2; transition: opacity .08s; }
 .tip.show { opacity: 1; }
@@ -242,14 +243,15 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     const hd = h('div', 'row hd'); hd.append(h('span', null, '곡'), h('span', null, `${NH}시 예상`), h('span', null, '증감')); sum.appendChild(hd);
     S.forEach(s => {
       const n1 = s.path[0]; if (!n1) return;
-      const d = n1.med - s.base, r = h('div', 'row'), nm = h('span', 'nm', s.title);
+      const d = s.stale ? null : n1.med - s.base, r = h('div', 'row'), nm = h('span', 'nm', s.title);   // stale: 지금 숫자가 없어 증감 모름
       if (s.artist) nm.appendChild(h('small', null, s.artist));
       const vc = h('span', 'vc'); vc.appendChild(h('b', 'v', fmt(n1.med)));
       if (s.nc && s.nc.corr) {                       // 5분 차트로 고친 만큼(처음 예측 → 고친 예측)
         const b0 = (s.path_base && s.path_base[0]) ? s.path_base[0].med : n1.med - s.nc.corr;
         vc.appendChild(h('small', 'nc', `처음 ${fmt(b0)} · 5분 차트 ${s.nc.corr > 0 ? '+' : '−'}${fmt(Math.abs(s.nc.corr))}명`));
       }
-      r.append(nm, vc, h('span', 'dv' + dcls(d), dtx(d)));
+      if (s.stale) vc.appendChild(h('small', 'nc', `${lab(s.base_t)} 숫자(${fmt(s.base)}명)로 만든 예측 · 지금 숫자 안 보임`));
+      r.append(nm, vc, d == null ? h('span', 'dv', '–') : h('span', 'dv' + dcls(d), dtx(d)));
       sum.appendChild(r);
     });
   } else sum.appendChild(h('div', 'empty', '지금 실시간 3위 안에 숫자가 있는 곡이 없어요.'));
@@ -312,8 +314,8 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       if (n1.t.slice(0, 10) !== tN.slice(0, 10)) tc.title = dlab(n1.t);
       const pc = cell(tr, '', 'pl'); pc.colSpan = 2; pc.appendChild(h('span', 'pill', '예측'));
       cell(tr, fmt(n1.med), 'u');
-      const d = n1.med - s.base;
-      cell(tr, dtx(d), 'd' + dcls(d));
+      const d = s.stale ? null : n1.med - s.base;
+      cell(tr, d == null ? '' : dtx(d), 'd' + (d == null ? '' : dcls(d)));
       if (hasWk) wkCell(tr, n1.t, n1.med);
       tbd.appendChild(tr);
     }
@@ -332,6 +334,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       p.appendChild(h('div', 'kn', ws && ws > s.base_t ? `나온 지 1주일이 안 돼서 전주 비교는 ${lab(ws)}부터 나와요.`
         : '지난주 이 시간엔 3위 밖이라 전주 숫자가 없어요.'));
     }
+    if (s.stale) p.appendChild(h('div', 'kn', `차트봇 그림에서 빠져서 ${lab(s.base_t)} 뒤로는 숫자가 없어요. 맨 아래 예측은 ${lab(s.base_t)} 숫자로 만든 거예요.`));
     if (s.how === 'keep') p.appendChild(h('div', 'kn', '24시간 전 숫자가 없어서 지금 숫자를 그대로 적었어요.'));
     board.appendChild(p);
   });
@@ -343,7 +346,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   const mult = document.getElementById('mult');
   const charts = [];
   S.forEach(s => {
-    const box = h('div'); const h3 = h('h3'); const i = h('i'); i.style.background = col(s); h3.append(i, document.createTextNode(s.title)); box.appendChild(h3);
+    const box = h('div'); const h3 = h('h3'); const i = h('i'); i.style.background = col(s); h3.append(i, document.createTextNode(s.title)); if (s.stale) h3.appendChild(h('small', null, `${lab(s.base_t)}까지 숫자`)); box.appendChild(h3);
     const ch = h('div', 'chart'); const tip = h('div', 'tip'); ch.appendChild(tip); box.appendChild(ch); mult.appendChild(box);
     charts.push({ s, ch, tip });
   });
@@ -359,7 +362,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       const P = past.length;
       const times = past.map(x => x[0]).concat(s.path.map(p => p.t));
       const act = past.map(x => x[1]).concat(s.path.map(() => null));
-      const med = past.map(() => null).concat(s.path.map(p => p.med)); med[P - 1] = s.base;
+      const med = past.map(() => null).concat(s.path.map(p => p.med)); if (!s.stale) med[P - 1] = s.base;
       const lo = past.map(() => null).concat(s.path.map(p => p.lo)), hi = past.map(() => null).concat(s.path.map(p => p.hi));
       const wk = pastWk.concat(okWk ? s.wk.slice(s.hist.length) : s.path.map(() => null));   // 지난주 같은 요일 · 시간
       const vals = [...act, ...med, ...lo, ...hi, ...wk].filter(v => v != null);
@@ -385,7 +388,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
         cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.style.opacity = 1;
         tip.replaceChildren(h('div', 'hd', lab(times[i]) + (i > ni ? ' · 예측' : '')));
         if (i <= ni) tip.appendChild(h('div', null, act[i] == null ? '3위 밖(숫자 없음)' : `실제 ${fmt(act[i])}`));
-        else { tip.appendChild(h('div', null, `예측 ${fmt(med[i])} (지금보다 ${sgn(med[i] - s.base)})`)); if (lo[i] != null) tip.appendChild(h('div', 'hd', `범위 ${fmt(lo[i])} ~ ${fmt(hi[i])}`)); }
+        else { tip.appendChild(h('div', null, `예측 ${fmt(med[i])} (${s.stale ? lab(s.base_t) : '지금'}보다 ${sgn(med[i] - s.base)})`)); if (lo[i] != null) tip.appendChild(h('div', 'hd', `범위 ${fmt(lo[i])} ~ ${fmt(hi[i])}`)); }
         if (wk[i] != null) { const cur = i <= ni ? act[i] : med[i];
           tip.appendChild(h('div', 'hd', `지난주 ${fmt(wk[i])}` + (cur != null ? ` · 지난주보다 ${sgn(cur - wk[i])}` : ''))); }
         tip.classList.add('show');
