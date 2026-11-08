@@ -239,7 +239,30 @@ td { font-variant-numeric: tabular-nums; }
   <div class="refm" id="refm"></div>
 </div>
 <script>
-fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(D => {
+const RELAY = 'https://market-relay.get943.workers.dev/melon';
+const PRISTINE = document.querySelector('.wrap').cloneNode(true);   // 다시 그릴 때 쓸 빈 틀
+let OFF = [], CUR = '';
+const ZOOM = {};                                                      // 곡별 '크게 보기' · 날짜 — 다시 그려도 유지
+const on = (t, ev, f) => { t.addEventListener(ev, f); OFF.push(() => t.removeEventListener(ev, f)); };
+const getJ = (u, ms) => { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), ms);
+  return fetch(u, { cache: 'no-store', signal: ac.signal }).then(r => { clearTimeout(tm); if (!r.ok) throw new Error(r.status); return r.json(); }); };
+const loadD = () => getJ(RELAY + '/live?t=' + Date.now(), 5000).then(D => (D && D.songs ? D : Promise.reject(new Error('empty'))))
+  .catch(() => getJ('melon/live.json?t=' + Date.now(), 20000));
+const verOf = D => `${D.built || ''}|${(D.nowl && D.nowl.t) || ''}`;
+function mount(D, again) {
+  const y = window.scrollY;
+  if (again) { OFF.forEach(f => f()); OFF = []; document.querySelector('.wrap').replaceWith(PRISTINE.cloneNode(true)); }
+  CUR = verOf(D);
+  render(D);
+  if (again) window.scrollTo(0, y);
+}
+function poll() {
+  if (document.hidden) return;
+  getJ(RELAY + '/ver?t=' + Date.now(), 5000).then(v => { if (v && v.v && v.v !== CUR) return loadD().then(D => { if (verOf(D) !== CUR) mount(D, true); }); }).catch(() => {});
+}
+loadD().then(D => { mount(D, false); setInterval(poll, 60000); document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); }); })
+  .catch(e => { document.getElementById('lede').textContent = '예측 자료를 불러오지 못했어요. 잠시 뒤 새로 고쳐 주세요.'; });
+function render(D) {
   const NS = 'http://www.w3.org/2000/svg';
   const fmt = n => n == null ? '–' : Math.round(n).toLocaleString('ko-KR');
   const sgn = n => n == null ? '–' : (n > 0 ? '+' : n < 0 ? '−' : '±') + fmt(Math.abs(n));
@@ -379,14 +402,16 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     const box = h('div'); const h3 = h('h3'); const i = h('i'); i.style.background = col(s); h3.append(i, document.createTextNode(s.title)); if (s.stale) h3.appendChild(h('small', null, `${lab(s.base_t)}까지 숫자`)); box.appendChild(h3);
     const days = h('div', 'days'); days.hidden = true; box.appendChild(days);
     const ch = h('div', 'chart'); const tip = h('div', 'tip'); ch.appendChild(tip); box.appendChild(ch); mult.appendChild(box);
-    const c = { s, ch, tip, box, days, big: false, day: null };
-    const zb = h('button', 'zb', '크게 보기'); zb.type = 'button'; h3.appendChild(zb);   // 크게 보기: 한 줄 다 쓰고 높게 + 날짜 고르기
-    zb.addEventListener('click', () => { c.big = !c.big; if (!c.big) c.day = null; box.classList.toggle('big', c.big); zb.textContent = c.big ? '작게 보기' : '크게 보기';
+    const z0 = ZOOM[s.title] || {};
+    const c = { s, ch, tip, box, days, big: !!z0.big, day: z0.day || null };
+    if (c.big) box.classList.add('big');
+    const zb = h('button', 'zb', c.big ? '작게 보기' : '크게 보기'); zb.type = 'button'; h3.appendChild(zb);   // 크게 보기: 한 줄 다 쓰고 높게 + 날짜 고르기
+    zb.addEventListener('click', () => { c.big = !c.big; if (!c.big) c.day = null; ZOOM[s.title] = { big: c.big, day: c.day }; box.classList.toggle('big', c.big); zb.textContent = c.big ? '작게 보기' : '크게 보기';
       draw(); if (c.big) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
     charts.push(c);
   });
   const hideTips = () => charts.forEach(o => { if (o.cross) o.cross.style.opacity = 0; o.tip.classList.remove('show'); });
-  document.addEventListener('pointerdown', e => { if (!(e.target.closest && e.target.closest('.chart'))) hideTips(); });
+  on(document, 'pointerdown', e => { if (!(e.target.closest && e.target.closest('.chart'))) hideTips(); });
   function draw() {
     charts.forEach(c => { const { s, ch, tip } = c;
       ch.querySelector('svg')?.remove();
@@ -412,7 +437,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       c.days.hidden = !c.big;
       if (c.big) c.days.replaceChildren(...[null, ...dates].map(d => {
         const b = h('button', null, d ? `${+d.slice(5, 7)}.${d.slice(8, 10)}(${WK[new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)).getDay()]})` : '전체');
-        b.type = 'button'; b.setAttribute('aria-pressed', String(d === c.day)); b.addEventListener('click', () => { c.day = d; draw(); }); return b; }));
+        b.type = 'button'; b.setAttribute('aria-pressed', String(d === c.day)); b.addEventListener('click', () => { c.day = d; ZOOM[c.s.title] = { big: c.big, day: d }; draw(); }); return b; }));
       const vals = [...act, ...med, ...lo, ...hi, ...wk].filter(v => v != null);
       const vmin = Math.min(...vals), vmax = Math.max(...vals), span = Math.max(1000, vmax - vmin), step = niceStep(span);
       const y0 = Math.floor((vmin - span * .05) / step) * step, y1 = Math.ceil((vmax + span * .05) / step) * step;
@@ -479,7 +504,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       VIEW = +b.dataset.v; sync(); try { localStorage.setItem('melonSpan', String(VIEW)); } catch (e2) {} draw(); });
   }
   draw();
-  let lastW = mult.clientWidth; window.addEventListener('resize', () => { if (mult.clientWidth !== lastW) { lastW = mult.clientWidth; draw(); } });
+  let lastW = mult.clientWidth; on(window, 'resize', () => { if (mult.clientWidth !== lastW) { lastW = mult.clientWidth; draw(); } });
 
   /* 얼마나 맞았나 — 다음 시간 예측과 나중에 나온 실제 숫자 */
   const x1 = (D.stats || {})['정각 직후|1'] || (D.stats || {})['정각 직전|1'];
@@ -607,7 +632,7 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
     rfe.prepend(box);
   } catch (e) { /* 그래프가 안 그려져도 페이지는 그대로 */ }
   /*LOCAL_ONLY_JS*/
-}).catch(e => { document.getElementById('lede').textContent = '예측 자료를 불러오지 못했어요. 잠시 뒤 새로 고쳐 주세요.'; });
+}
 </script>
 </body>
 </html>
