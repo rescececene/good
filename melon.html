@@ -119,7 +119,13 @@ table.b5 tr.meta .sun { color: var(--pos); }
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill { color: #17133a; } }
 :root[data-theme="dark"] .pill { color: #17133a; }
-.chart { position: relative; width: 100%; }
+.chart { position: relative; width: 100%; touch-action: pan-y; }
+.mult > div.big { grid-column: 1 / -1; }
+.mult h3 .zb { margin-left: auto; font: inherit; font-size: 12.5px; font-weight: 500; color: var(--ink-2); background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 2px 9px; cursor: pointer; white-space: nowrap; }
+.days { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.days[hidden] { display: none; }
+.days button { font: inherit; font-size: 12.5px; padding: 3px 10px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--ink-2); cursor: pointer; }
+.days button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); font-weight: 650; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 svg text { font-family: inherit; fill: var(--muted); font-size: 11.5px; }
 svg .tick { font-variant-numeric: tabular-nums; }
@@ -154,6 +160,11 @@ svg text.sc { font-size: 11px; font-weight: 600; }
 .mult h3 i { width: 10px; height: 10px; border-radius: 50%; }
 .tip { position: absolute; pointer-events: none; opacity: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.10); padding: 7px 10px; font-size: 12.5px; min-width: 150px; z-index: 2; transition: opacity .08s; }
 .tip.show { opacity: 1; }
+.tip .ot { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--border); }
+.tip .or { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.tip .or i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.tip .or span { color: var(--ink-2); flex: 1; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+.tip .or b { margin-left: 8px; font-weight: 600; }
 .tip .hd { color: var(--ink-2); margin-bottom: 2px; }
 .tip b { font-variant-numeric: tabular-nums; }
 .tbl-wrap { overflow-x: auto; }
@@ -351,13 +362,20 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
   const charts = [];
   S.forEach(s => {
     const box = h('div'); const h3 = h('h3'); const i = h('i'); i.style.background = col(s); h3.append(i, document.createTextNode(s.title)); if (s.stale) h3.appendChild(h('small', null, `${lab(s.base_t)}까지 숫자`)); box.appendChild(h3);
+    const days = h('div', 'days'); days.hidden = true; box.appendChild(days);
     const ch = h('div', 'chart'); const tip = h('div', 'tip'); ch.appendChild(tip); box.appendChild(ch); mult.appendChild(box);
-    charts.push({ s, ch, tip });
+    const c = { s, ch, tip, box, days, big: false, day: null };
+    const zb = h('button', 'zb', '크게 보기'); zb.type = 'button'; h3.appendChild(zb);   // 크게 보기: 한 줄 다 쓰고 높게 + 날짜 고르기
+    zb.addEventListener('click', () => { c.big = !c.big; if (!c.big) c.day = null; box.classList.toggle('big', c.big); zb.textContent = c.big ? '작게 보기' : '크게 보기';
+      draw(); if (c.big) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+    charts.push(c);
   });
+  const hideTips = () => charts.forEach(o => { if (o.cross) o.cross.style.opacity = 0; o.tip.classList.remove('show'); });
+  document.addEventListener('pointerdown', e => { if (!(e.target.closest && e.target.closest('.chart'))) hideTips(); });
   function draw() {
-    charts.forEach(({ s, ch, tip }) => {
+    charts.forEach(c => { const { s, ch, tip } = c;
       ch.querySelector('svg')?.remove();
-      const W = ch.clientWidth || 300, H = 220, m = { t: 10, r: 8, b: 26, l: 44 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+      const W = ch.clientWidth || 300, H = c.big ? (W < 560 ? 300 : 380) : 220, m = { t: 10, r: 8, b: 26, l: 44 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
       const wv = VIEW === 7 && s.u14 && s.u14.length === 336;          // 1주일: u14 뒤 168칸 = 지난 7일, 앞 168칸 = 그 지난주
       const lt = s.hist[s.hist.length - 1][0];
       const past = wv ? s.u14.slice(168).map((v, j) => [tAdd(lt, j - 167), v]) : s.hist.map(x => [x[0], x[1]]);
@@ -369,6 +387,17 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       const med = past.map(() => null).concat(s.path.map(p => p.med)); if (!s.stale) med[P - 1] = s.base;
       const lo = past.map(() => null).concat(s.path.map(p => p.lo)), hi = past.map(() => null).concat(s.path.map(p => p.hi));
       const wk = pastWk.concat(okWk ? s.wk.slice(s.hist.length) : s.path.map(() => null));   // 지난주 같은 요일 · 시간
+      const dates = [...new Set(times.map(t => t.slice(0, 10)))];          // 크게 보기: 날짜 고르기(그날 0~23시만)
+      if (c.day && !dates.includes(c.day)) c.day = null;
+      const fT = times.slice(), fA = act.slice(), fM = med.slice();       // 다른 그래프 말풍선용(자르기 전 전체)
+      let A0 = 0;
+      if (c.day) { const ks = times.map((t, k) => t.slice(0, 10) === c.day ? k : -1).filter(k => k >= 0);
+        if (ks.length >= 2) { A0 = ks[0]; const B0 = ks[ks.length - 1]; [times, act, med, lo, hi, wk].forEach(arr => { arr.splice(B0 + 1); arr.splice(0, A0); }); }
+        else c.day = null; }
+      c.days.hidden = !c.big;
+      if (c.big) c.days.replaceChildren(...[null, ...dates].map(d => {
+        const b = h('button', null, d ? `${+d.slice(5, 7)}.${d.slice(8, 10)}(${WK[new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)).getDay()]})` : '전체');
+        b.type = 'button'; b.setAttribute('aria-pressed', String(d === c.day)); b.addEventListener('click', () => { c.day = d; draw(); }); return b; }));
       const vals = [...act, ...med, ...lo, ...hi, ...wk].filter(v => v != null);
       const vmin = Math.min(...vals), vmax = Math.max(...vals), span = Math.max(1000, vmax - vmin), step = niceStep(span);
       const y0 = Math.floor((vmin - span * .05) / step) * step, y1 = Math.ceil((vmax + span * .05) / step) * step;
@@ -376,7 +405,8 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       const svg = el('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': s.title + (wv ? ' 지난 7일' : ' 지난 48시간') + '과 앞으로 24시간' });
       ch.prepend(svg);
       for (let v = y0; v <= y1 + 1e-6; v += step) { el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: 'grid' }, svg); txt(svg, m.l - 6, Y(v) + 4, tickLab(v, step), 'tick', 'end'); }
-      times.forEach((t, i) => { if (hr(t) === 0) { el('line', { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg); txt(svg, X(i) + 3, m.t + ph + 16, pw * 24 / (N - 1) < 40 ? `${+t.slice(8, 10)}일` : `${+t.slice(5, 7)}.${t.slice(8, 10)}`, 'day', 'start'); } });
+      if (c.day) times.forEach((t, i) => { if (hr(t) % 3 === 0) txt(svg, X(i), m.t + ph + 16, `${hr(t)}시`, 'tick', i === 0 ? 'start' : 'middle'); });
+      else times.forEach((t, i) => { if (hr(t) === 0) { el('line', { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg); txt(svg, X(i) + 3, m.t + ph + 16, pw * 24 / (N - 1) < 40 ? `${+t.slice(8, 10)}일` : `${+t.slice(5, 7)}.${t.slice(8, 10)}`, 'day', 'start'); } });
       const seg = []; const band = () => { if (seg.length > 1) { const pts = seg.map(i => `${X(i)},${Y(hi[i])}`).concat(seg.slice().reverse().map(i => `${X(i)},${Y(lo[i])}`)); const pg = el('polygon', { points: pts.join(' '), class: 'band' }, svg); pg.style.fill = col(s); } seg.length = 0; };
       times.forEach((t, i) => { if (lo[i] != null && hi[i] != null) seg.push(i); else band(); }); band();
       const line = (arr, cls) => { let d = '', pen = false; arr.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; }); const p = el('path', { d, class: cls }, svg); p.style.stroke = col(s); };
@@ -385,11 +415,19 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
       { const L = N - 1, ys = [['돌파', hi[L]], ['유지', med[L]], ['하락', lo[L]]].filter(x => x[1] != null).map(([n, v]) => [n, Y(v) - 4]);   // 끝 이름표(겹치면 아래로)
         for (let k = 1; k < ys.length; k++) if (ys[k][1] - ys[k - 1][1] < 12) ys[k][1] = ys[k - 1][1] + 12;
         ys.forEach(([n, y]) => { const t = txt(svg, X(L) - 2, y, n, 'note sc', 'end'); t.style.fill = col(s); }); }
-      const ni = P - 1; el('line', { x1: X(ni), x2: X(ni), y1: m.t, y2: m.t + ph, class: 'now' }, svg); txt(svg, X(ni) + 4, m.t + 10, '지금', 'note');
-      const c1 = el('circle', { cx: X(ni + 1), cy: Y(s.path[0].med), r: 4, class: 'dot' }, svg); c1.style.fill = col(s);
+      const ni = P - 1 - A0;                                          // '지금' 자리(하루 보기면 그날 안에 있을 때만)
+      if (ni >= 0 && ni <= N - 1) { el('line', { x1: X(ni), x2: X(ni), y1: m.t, y2: m.t + ph, class: 'now' }, svg); txt(svg, X(ni) + 4, m.t + 10, '지금', 'note'); }
+      if (ni + 1 >= 0 && ni + 1 <= N - 1) { const c1 = el('circle', { cx: X(ni + 1), cy: Y(s.path[0].med), r: 4, class: 'dot' }, svg); c1.style.fill = col(s); }
+      if (c.day) times.forEach((t, i) => { const v = i <= ni ? act[i] : med[i]; if (v == null || i === ni + 1) return;   // 하루 보기: 시간마다 점
+        const d = el('circle', { cx: X(i), cy: Y(v), r: 2.6, class: 'dot' }, svg); d.style.fill = col(s); if (i > ni) d.style.opacity = .55; });
       const cross = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ph, class: 'cross' }, svg);
+      const ix = {}; times.forEach((t, k) => { ix[t] = k; });          // 다른 그래프가 같은 시각 값을 찾을 때
+      c.cross = cross; c.X = X;
+      const fx = {}; fT.forEach((t, k) => { fx[t] = k; });
+      c.at = t => { const k = fx[t]; if (k == null) return null; return k <= P - 1 ? { k: ix[t], act: fA[k] } : { k: ix[t], med: fM[k] }; };   // k = 이 그래프에 보이는 자리(없으면 세로선 안 그림)
       const hit = el('rect', { x: m.l, y: 0, width: pw, height: H, fill: 'transparent' }, svg);
       const show = ev => {
+        charts.forEach(o => { if (o !== c) o.tip.classList.remove('show'); });
         const r = svg.getBoundingClientRect(); const x = (ev.clientX - r.left) * (W / r.width);
         const i = Math.max(0, Math.min(N - 1, Math.round((x - m.l) / (pw / (N - 1)))));
         cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.style.opacity = 1;
@@ -400,11 +438,19 @@ fetch('melon/live.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json
           if (lo[i] != null) tip.appendChild(h('div', 'hd', `추세하락 ${fmt(lo[i])}`)); }
         if (wk[i] != null) { const cur = i <= ni ? act[i] : med[i];
           tip.appendChild(h('div', 'hd', `지난주 ${fmt(wk[i])}` + (cur != null ? ` · 지난주보다 ${sgn(cur - wk[i])}` : ''))); }
+        const ob = h('div', 'ot'); ob.appendChild(h('div', 'hd', '같은 시간 다른 곡'));   // 같은 시각 다른 곡 숫자 + 그 그래프에도 세로선
+        charts.forEach(o => { if (o === c || !o.at) return; const v = o.at(times[i]);
+          if (!v) { o.cross.style.opacity = 0; return; }
+          if (v.k == null) o.cross.style.opacity = 0; else { o.cross.setAttribute('x1', o.X(v.k)); o.cross.setAttribute('x2', o.X(v.k)); o.cross.style.opacity = 1; }
+          const r = h('div', 'or'), dot = h('i'); dot.style.background = col(o.s);
+          r.append(dot, h('span', null, o.s.title), h('b', null, 'act' in v ? (v.act == null ? '숫자 없음' : fmt(v.act)) : (v.med == null ? '–' : '예측 ' + fmt(v.med))));
+          ob.appendChild(r); });
+        if (ob.children.length > 1) tip.appendChild(ob);
         tip.classList.add('show');
         const bw = ch.clientWidth, tw = tip.offsetWidth; let left = X(i) + 12; if (left + tw > bw) left = X(i) - tw - 12; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = '8px';
       };
       hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show);
-      hit.addEventListener('pointerleave', () => { cross.style.opacity = 0; tip.classList.remove('show'); });
+      hit.addEventListener('pointerleave', ev => { if (ev.pointerType !== 'touch') hideTips(); });   // 손가락은 떼도 말풍선 남김(다른 곳 누르면 닫힘)
     });
     document.getElementById('wkLeg').hidden = !mult.querySelector('path.ln.wk');
   }
