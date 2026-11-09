@@ -193,6 +193,11 @@ td { font-variant-numeric: tabular-nums; }
 .nowg svg { width: 100%; height: auto; display: block; margin-top: 12px; }
 td.u.gs, small.gs { color: var(--muted); font-style: italic; }
 svg .ln.gs { stroke-dasharray: 2 3; stroke-width: 1.8; opacity: .8; }
+.allc { position: relative; margin: 4px 0 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.allc h3 { font-size: 14px; margin: 0 0 2px; }
+.allc .lg { display: flex; gap: 4px 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); margin: 2px 0 4px; }
+.allc .lg i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.allc svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
 .refm { color: var(--muted); font-size: 11.5px; line-height: 1.6; margin: 18px 2px 0; }
 .refm div + div { margin-top: 2px; }
 .fm5 { margin: 0 0 10px; max-width: 360px; }
@@ -228,6 +233,7 @@ svg .ln.gs { stroke-dasharray: 2 3; stroke-width: 1.8; opacity: .8; }
     <p class="sub">실선은 실제 숫자예요. 앞으로는 세 갈래로 그렸어요. 위에서부터 추세돌파 · 추세유지(예측) · 추세하락이고, 실제 숫자는 대개 돌파와 하락 사이에 들어와요.</p>
     <div class="seg" id="span" hidden><button type="button" data-v="2" aria-pressed="true">2일</button><button type="button" data-v="7" aria-pressed="false">1주일</button></div>
     <div class="legend"><span><i class="lkey"></i>실제</span><span><i class="lkey dash"></i>추세유지(예측)</span><span><i class="lkey sc"></i>추세돌파 · 추세하락</span><span id="wkLeg" hidden><i class="lkey wk"></i>지난주 같은 요일 · 시간</span></div>
+    <div class="allc" id="allC"></div>
     <div class="mult" id="mult"></div>
   </section>
 
@@ -421,7 +427,61 @@ function render(D) {
       draw(); if (c.big) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
     charts.push(c);
   });
-  const hideTips = () => charts.forEach(o => { if (o.cross) o.cross.style.opacity = 0; o.tip.classList.remove('show'); });
+  /* 예측 한눈에: 곡마다 지금 → 앞으로 24시간 예측(가운데값)만 한 그래프에 */
+  function drawAll() {
+    const box = document.getElementById('allC'); if (!box) return;
+    box.replaceChildren();
+    const SS = S.filter(s => s.path && s.path.length);
+    if (SS.length < 2) { box.hidden = true; return; }
+    box.hidden = false;
+    const lt = SS[0].hist[SS[0].hist.length - 1][0];
+    const nF = Math.max(...SS.map(s => s.path.length));
+    const times = []; for (let j = 0; j <= nF; j++) times.push(tAdd(lt, j));
+    const ix = {}; times.forEach((t, k) => { ix[t] = k; });
+    const ser = SS.map(s => { const a = times.map(() => null); if (!s.stale) a[0] = s.base; s.path.forEach(p => { if (ix[p.t] != null) a[ix[p.t]] = p.med; }); return { s, a }; });
+    box.appendChild(h('h3', null, '예측 한눈에 — 앞으로 24시간'));
+    const lg = h('div', 'lg'); ser.forEach(({ s }) => { const sp = h('span'); const i = h('i'); i.style.background = col(s); sp.append(i, document.createTextNode(s.title + (s.stale ? ' (숫자 안 보임)' : ''))); lg.appendChild(sp); }); box.appendChild(lg);
+    const W = Math.max(300, box.clientWidth || 600), H = W < 560 ? 240 : 300, m = { l: 46, r: W < 560 ? 64 : 84, t: 12, b: 24 };
+    const pw = W - m.l - m.r, ph = H - m.t - m.b, N = times.length;
+    const vals = ser.flatMap(x => x.a).filter(v => v != null);
+    const vmin = Math.min(...vals), vmax = Math.max(...vals), span = Math.max(1000, vmax - vmin), step = niceStep(span);
+    const y0 = Math.floor((vmin - span * .05) / step) * step, y1 = Math.ceil((vmax + span * .05) / step) * step;
+    const X = i => m.l + i * pw / (N - 1), Y = v => m.t + ph * (1 - (v - y0) / (y1 - y0));
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '곡별 앞으로 24시간 예측 비교' });
+    for (let v = y0; v <= y1 + 1e-6; v += step) { el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: 'grid' }, svg); txt(svg, m.l - 6, Y(v) + 4, tickLab(v, step), 'tick', 'end'); }
+    times.forEach((t, i) => { const hh = hr(t); if (i > 0 && hh === 0) el('line', { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg);
+      const ev = W < 560 ? 6 : 3;
+      if (i === 0 || (hh % ev === 0 && X(i) - X(0) > 34)) txt(svg, X(i), m.t + ph + 16, i === 0 ? '지금' : (hh === 0 ? (W < 560 ? `${+t.slice(8, 10)}일` : `${+t.slice(8, 10)}일 0시`) : `${hh}시`), 'tick', i === 0 ? 'start' : 'middle'); });
+    const ends = [];
+    ser.forEach(({ s, a }) => {
+      let d = '', pen = false; a.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; });
+      const p = el('path', { d, class: 'ln' }, svg); p.style.stroke = col(s); p.style.strokeWidth = 2.4;
+      if (a[0] != null) { const c0 = el('circle', { cx: X(0), cy: Y(a[0]), r: 3.5 }, svg); c0.style.fill = col(s); }
+      const li = a.map((v, i) => v == null ? -1 : i).filter(i => i >= 0).pop();
+      if (li != null) ends.push({ y: Y(a[li]), s, v: a[li] });
+    });
+    ends.sort((p, q) => p.y - q.y); for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 14) ends[k].y = ends[k - 1].y + 14;
+    ends.forEach(e => { const t = txt(svg, W - m.r + 6, e.y + 4, (W < 560 ? '' : '') + fmt(e.v), 'note'); t.style.fill = col(e.s); t.style.fontWeight = 600; });
+    const cross = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ph, class: 'cross' }, svg);
+    const hit = el('rect', { x: m.l, y: m.t, width: pw, height: ph, fill: 'transparent' }, svg);
+    box.appendChild(svg);
+    const tip = h('div', 'tip'); box.appendChild(tip);
+    const show = ev => {
+      const r = svg.getBoundingClientRect(), sx = W / r.width, x = (ev.clientX - r.left) * sx;
+      const i = Math.max(0, Math.min(N - 1, Math.round((x - m.l) / (pw / (N - 1)))));
+      cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.style.opacity = 1;
+      tip.replaceChildren(h('div', 'hd', i === 0 ? `지금 (${lab(times[0])})` : `${lab(times[i])} 예측`));
+      ser.slice().sort((p, q) => (q.a[i] ?? -1) - (p.a[i] ?? -1)).forEach(({ s, a }) => { const row = h('div', 'or'); const d = h('i'); d.style.background = col(s);
+        row.append(d, h('span', null, s.title), h('b', null, a[i] != null ? fmt(a[i]) : '–')); tip.appendChild(row); });
+      const bx = box.getBoundingClientRect(), px = X(i) / sx + (r.left - bx.left);
+      tip.style.left = Math.min(Math.max(0, px + 12), bx.width - 190) + 'px'; tip.style.top = (m.t / sx + 40) + 'px'; tip.classList.add('show');
+    };
+    hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show);
+    hit.addEventListener('pointerleave', ev => { if (ev.pointerType !== 'touch') { tip.classList.remove('show'); cross.style.opacity = 0; } });
+    allHide = () => { tip.classList.remove('show'); cross.style.opacity = 0; };
+  }
+  let allHide = () => {};
+  const hideTips = () => { allHide(); charts.forEach(o => { if (o.cross) o.cross.style.opacity = 0; o.tip.classList.remove('show'); }); };
   on(document, 'pointerdown', e => { if (!(e.target.closest && e.target.closest('.chart'))) hideTips(); });
   function draw() {
     charts.forEach(c => { const { s, ch, tip } = c;
@@ -505,6 +565,7 @@ function render(D) {
       hit.addEventListener('pointerleave', ev => { if (ev.pointerType !== 'touch') hideTips(); });   // 손가락은 떼도 말풍선 남김(다른 곳 누르면 닫힘)
     });
     document.getElementById('wkLeg').hidden = !mult.querySelector('path.ln.wk');
+    drawAll();
   }
   const spanEl = document.getElementById('span');
   if (S.some(s => (s.u14 || []).some(v => v != null))) {   // 지난 14일 숫자가 있는 판(live.json)일 때만 단추
