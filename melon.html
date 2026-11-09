@@ -260,7 +260,12 @@ function poll() {
   if (document.hidden) return;
   getJ(RELAY + '/ver?t=' + Date.now(), 5000).then(v => { if (v && v.v && v.v !== CUR) return loadD().then(D => { if (verOf(D) !== CUR) mount(D, true); }); }).catch(() => {});
 }
-loadD().then(D => { mount(D, false); setInterval(poll, 60000); document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); }); })
+function hot() {                                         // 새 숫자가 나오는 때 근처(한국 시각): 매시 3~7분 · 15~17 · 25~27 · … · 52~53분
+  const k = new Date(Date.now() + 9 * 3600e3), m = k.getUTCMinutes();
+  return (m >= 3 && m <= 7) || m % 10 === 5 || m % 10 === 6 || m % 10 === 7 || m === 52 || m === 53;
+}
+function tick() { poll(); setTimeout(tick, hot() ? 10000 : 60000); }
+loadD().then(D => { mount(D, false); setTimeout(tick, hot() ? 10000 : 60000); document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); }); })
   .catch(e => { document.getElementById('lede').textContent = '예측 자료를 불러오지 못했어요. 잠시 뒤 새로 고쳐 주세요.'; });
 function render(D) {
   const NS = 'http://www.w3.org/2000/svg';
