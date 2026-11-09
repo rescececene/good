@@ -188,6 +188,7 @@ td { font-variant-numeric: tabular-nums; }
 .nowt td { text-align: right; padding: 7px 6px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .nowt th:first-child, .nowt td:first-child { text-align: left; white-space: normal; }
 .nowt .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.nowt .bt { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
 .nowt .art { display: block; color: var(--muted); font-size: 11.5px; margin: 1px 0 0 14px; }
 @media (max-width: 560px) { .nowt { font-size: 12.5px; } .nowt th { white-space: normal; } .nowt td { padding: 7px 3px; } .nowt th { padding: 4px 3px; } }
 .nowg svg { width: 100%; height: auto; display: block; margin-top: 12px; }
@@ -637,7 +638,33 @@ function render(D) {
     const hh = +NW.t.slice(11, 13), mm = +NW.t.slice(14, 16);
     document.getElementById('nowSub').textContent = `멜론 앱에서 곡을 누르면 나오는 '이 곡은 지금 N명이 듣고 있어요' 숫자예요. 10분마다 바뀌어요. (${hh}시${mm ? ' ' + mm + '분' : ''} 기준${NW.old ? ' · 한동안 새 숫자를 못 받았어요' : ''})`;
     const tb = document.getElementById('nowTbl');
-    const hd = h('tr'); ['곡', '지금', '10분 전보다', '1시간 전보다'].forEach(s => hd.appendChild(h('th', null, s))); tb.appendChild(hd);
+    /* 최고값: PC 가 모은 하루 치(nowx.day) + Worker 의 최근 숫자(nowl.series) + 지금 숫자 */
+    const p2 = n => String(n).padStart(2, '0');
+    const stp = d => `${d.getUTCFullYear()}-${p2(d.getUTCMonth() + 1)}-${p2(d.getUTCDate())} ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}`;
+    const tNow = new Date(NW.t.replace(' ', 'T') + ':00Z'), from24 = stp(new Date(tNow - 24 * 3600e3)), hrKey = NW.t.slice(0, 13);
+    const best = r => {
+      const m = {};
+      const nx = D.nowx && D.nowx.day && D.nowx.day.series[r.id];
+      if (nx) D.nowx.day.times.forEach((t, i) => { if (nx[i] != null) m[t] = nx[i]; });
+      const ns = NW.series[r.id];
+      if (ns) ns.forEach((v, i) => { if (v != null) m[stp(new Date(tNow - (ns.length - 1 - i) * 600e3))] = v; });
+      m[NW.t] = r.now;
+      let hb = null, db = null;
+      Object.entries(m).forEach(([t, v]) => {
+        if (t > from24 && t <= NW.t && (!db || v > db.v)) db = { t, v };
+        if (t.slice(0, 13) === hrKey && (!hb || v > hb.v)) hb = { t, v };
+      });
+      return [hb, db];
+    };
+    const bestCell = (tr, b, withDay) => {
+      const td = h('td');
+      if (!b) { td.textContent = '–'; tr.appendChild(td); return; }
+      td.appendChild(document.createTextNode(fmt(b.v)));
+      const sameDay = b.t.slice(0, 10) === NW.t.slice(0, 10);
+      td.appendChild(h('span', 'bt', `${withDay && !sameDay ? (+b.t.slice(8, 10)) + '일 ' : ''}${+b.t.slice(11, 13)}:${b.t.slice(14, 16)}`));
+      tr.appendChild(td);
+    };
+    const hd = h('tr'); ['곡', '지금', '10분 전보다', '1시간 전보다', `${+NW.t.slice(11, 13)}시대 최고`, '24시간 최고'].forEach(s => hd.appendChild(h('th', null, s))); tb.appendChild(hd);
     const cl = n => n == null || n === 0 ? null : n > 0 ? 'up' : 'down';
     NW.rows.forEach(r => {
       const tr = h('tr'), c0 = h('td');
@@ -646,6 +673,7 @@ function render(D) {
       tr.appendChild(c0);
       const c1 = h('td'); c1.appendChild(h('b', null, fmt(r.now) + '명')); tr.appendChild(c1);
       [r.d10, r.d60].forEach(v => tr.appendChild(h('td', cl(v), sgn(v))));
+      { const [hb, db] = best(r); bestCell(tr, hb, false); bestCell(tr, db, true); }
       tb.appendChild(tr);
     });
     const gbox = document.getElementById('nowG');
