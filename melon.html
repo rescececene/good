@@ -664,7 +664,7 @@ function render(D) {
       td.appendChild(h('span', 'bt', `${withDay && !sameDay ? (+b.t.slice(8, 10)) + '일 ' : ''}${+b.t.slice(11, 13)}:${b.t.slice(14, 16)}`));
       tr.appendChild(td);
     };
-    const hd = h('tr'); ['곡', '지금', '10분 전보다', '1시간 전보다', `${+NW.t.slice(11, 13)}시대 최고`, '24시간 최고'].forEach(s => hd.appendChild(h('th', null, s))); tb.appendChild(hd);
+    const hd = h('tr'); ['곡', '지금', '10분 전보다', '1시간 전보다', `${NW.t.slice(11, 13)}:00시 최고`, '24시간 최고'].forEach(s => hd.appendChild(h('th', null, s))); tb.appendChild(hd);
     const cl = n => n == null || n === 0 ? null : n > 0 ? 'up' : 'down';
     NW.rows.forEach(r => {
       const tr = h('tr'), c0 = h('td');
