@@ -191,6 +191,8 @@ td { font-variant-numeric: tabular-nums; }
 .nowt .art { display: block; color: var(--muted); font-size: 11.5px; margin: 1px 0 0 14px; }
 @media (max-width: 560px) { .nowt { font-size: 12.5px; } .nowt th { white-space: normal; } .nowt td { padding: 7px 3px; } .nowt th { padding: 4px 3px; } }
 .nowg svg { width: 100%; height: auto; display: block; margin-top: 12px; }
+td.u.gs, small.gs { color: var(--muted); font-style: italic; }
+svg .ln.gs { stroke-dasharray: 2 3; stroke-width: 1.8; opacity: .8; }
 .refm { color: var(--muted); font-size: 11.5px; line-height: 1.6; margin: 18px 2px 0; }
 .refm div + div { margin-top: 2px; }
 .fm5 { margin: 0 0 10px; max-width: 360px; }
@@ -309,6 +311,8 @@ function render(D) {
         vc.appendChild(h('small', 'nc', `처음 ${fmt(b0)} · 5분 차트 ${s.nc.corr > 0 ? '+' : '−'}${fmt(Math.abs(s.nc.corr))}명`));
       }
       if (s.stale) vc.appendChild(h('small', 'nc', `${lab(s.base_t)} 숫자(${fmt(s.base)}명)로 만든 예측 · 지금 숫자 안 보임`));
+      { const gk = Object.keys(s.guess || {}).sort().pop();
+        if (gk) vc.appendChild(h('small', 'nc gs', `추측 ${lab(gk)} 약 ${fmt(s.guess[gk])}명 (멜론 앱 '지금 듣는 사람'으로)`)); }
       r.append(nm, vc, d == null ? h('span', 'dv', '–') : h('span', 'dv' + dcls(d), dtx(d)));
       sum.appendChild(r);
     });
@@ -359,7 +363,9 @@ function render(D) {
       cell(tr, `${H}시`, 't');
       cell(tr, rk != null ? String(rk) : '', 'r ' + rc(rk));
       cell(tr, t1 != null ? String(t1) : '', 'r ' + rc(t1));
-      cell(tr, u != null ? fmt(u) : '', 'u' + (u != null && u === s.peak ? ' pk' : ''));
+      const gu = u == null && s.guess ? s.guess[t] : null;          // 차트봇에 안 보인 시간: '지금 듣는 사람'으로 낸 추측치
+      const uc = cell(tr, u != null ? fmt(u) : gu != null ? '추측 ' + fmt(gu) : '', 'u' + (u != null && u === s.peak ? ' pk' : '') + (gu != null ? ' gs' : ''));
+      if (gu != null) uc.title = "차트봇에 안 보인 시간 — 멜론 앱 '지금 듣는 사람'으로 추측한 숫자예요";
       const d = u != null && prev != null ? u - prev : null;
       cell(tr, d != null ? dtx(d) : '', 'd' + (d != null ? dcls(d) : ''));
       if (hasWk) wkCell(tr, t, u);
@@ -443,7 +449,7 @@ function render(D) {
       if (c.big) c.days.replaceChildren(...[null, ...dates].map(d => {
         const b = h('button', null, d ? `${+d.slice(5, 7)}.${d.slice(8, 10)}(${WK[new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)).getDay()]})` : '전체');
         b.type = 'button'; b.setAttribute('aria-pressed', String(d === c.day)); b.addEventListener('click', () => { c.day = d; ZOOM[c.s.title] = { big: c.big, day: d }; draw(); }); return b; }));
-      const vals = [...act, ...med, ...lo, ...hi, ...wk].filter(v => v != null);
+      const vals = [...act, ...med, ...lo, ...hi, ...wk, ...times.map(t => (s.guess || {})[t])].filter(v => v != null);
       const vmin = Math.min(...vals), vmax = Math.max(...vals), span = Math.max(1000, vmax - vmin), step = niceStep(span);
       const y0 = Math.floor((vmin - span * .05) / step) * step, y1 = Math.ceil((vmax + span * .05) / step) * step;
       const N = times.length, X = i => m.l + i * pw / (N - 1), Y = v => m.t + ph * (1 - (v - y0) / (y1 - y0));
@@ -457,6 +463,7 @@ function render(D) {
       const line = (arr, cls) => { let d = '', pen = false; arr.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; }); const p = el('path', { d, class: cls }, svg); p.style.stroke = col(s); };
       { let d = '', pen = false; wk.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; }); if (d) el('path', { d, class: 'ln wk' }, svg); }
       line(hi, 'ln sc'); line(lo, 'ln sc'); line(med, 'ln fc'); line(act, 'ln');
+      if (s.guess && Object.keys(s.guess).length) line(times.map(t => s.guess[t] ?? null), 'ln gs');   // 추측치(점선)
       { const L = N - 1, ys = [['돌파', hi[L]], ['유지', med[L]], ['하락', lo[L]]].filter(x => x[1] != null).map(([n, v]) => [n, Y(v) - 4]);   // 끝 이름표(겹치면 아래로)
         for (let k = 1; k < ys.length; k++) if (ys[k][1] - ys[k - 1][1] < 12) ys[k][1] = ys[k - 1][1] + 12;
         ys.forEach(([n, y]) => { const t = txt(svg, X(L) - 2, y, n, 'note sc', 'end'); t.style.fill = col(s); }); }
