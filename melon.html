@@ -197,6 +197,9 @@ svg .ln.gs { stroke-dasharray: 2 3; stroke-width: 1.8; opacity: .8; }
 .allc h3 { font-size: 14px; margin: 0 0 2px; }
 .allc .lg { display: flex; gap: 4px 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); margin: 2px 0 4px; }
 .allc .lg i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.allc .lg .nt { color: var(--muted); font-size: 11.5px; }
+#nowG { position: relative; }
+.nseg { margin: 2px 0 6px; }
 .allc svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
 .refm { color: var(--muted); font-size: 11.5px; line-height: 1.6; margin: 18px 2px 0; }
 .refm div + div { margin-top: 2px; }
@@ -434,34 +437,50 @@ function render(D) {
     const SS = S.filter(s => s.path && s.path.length);
     if (SS.length < 2) { box.hidden = true; return; }
     box.hidden = false;
+    const wv = VIEW === 7, nP = wv ? 168 : 48;                         // 단추: 2일 = 지난 48시간 · 1주일 = 지난 7일
     const lt = SS[0].hist[SS[0].hist.length - 1][0];
     const nF = Math.max(...SS.map(s => s.path.length));
-    const times = []; for (let j = 0; j <= nF; j++) times.push(tAdd(lt, j));
+    const times = []; for (let j = -(nP - 1); j <= nF; j++) times.push(tAdd(lt, j));
     const ix = {}; times.forEach((t, k) => { ix[t] = k; });
-    const ser = SS.map(s => { const a = times.map(() => null); if (!s.stale) a[0] = s.base; s.path.forEach(p => { if (ix[p.t] != null) a[ix[p.t]] = p.med; }); return { s, a }; });
-    box.appendChild(h('h3', null, '예측 한눈에 — 앞으로 24시간'));
-    const lg = h('div', 'lg'); ser.forEach(({ s }) => { const sp = h('span'); const i = h('i'); i.style.background = col(s); sp.append(i, document.createTextNode(s.title + (s.stale ? ' (숫자 안 보임)' : ''))); lg.appendChild(sp); }); box.appendChild(lg);
+    const N0 = nP - 1;                                                  // '지금' 칸
+    const ser = SS.map(s => {
+      const past = times.map(() => null), fut = times.map(() => null);
+      const slt = s.hist[s.hist.length - 1][0];
+      const src = wv && s.u14 && s.u14.length === 336 ? s.u14.slice(168).map((v, j) => [tAdd(slt, j - 167), v]) : s.hist.map(x => [x[0], x[1]]);
+      src.forEach(([t, v]) => { if (v != null && ix[t] != null && ix[t] <= N0) past[ix[t]] = v; });
+      if (!s.stale) { past[N0] = s.base; fut[N0] = s.base; }
+      s.path.forEach(p => { if (ix[p.t] != null) fut[ix[p.t]] = p.med; });
+      return { s, past, fut, a: times.map((t, i) => i < N0 ? past[i] : i === N0 ? (past[i] ?? fut[i]) : fut[i]) };
+    });
+    box.appendChild(h('h3', null, `예측 한눈에 — 지난 ${wv ? '1주일' : '2일'} + 앞으로 24시간`));
+    const lg = h('div', 'lg'); ser.forEach(({ s }) => { const sp = h('span'); const i = h('i'); i.style.background = col(s); sp.append(i, document.createTextNode(s.title + (s.stale ? ' (숫자 안 보임)' : ''))); lg.appendChild(sp); });
+    lg.appendChild(h('span', 'nt', '흐린 선 = 실제 · 진한 선 = 예측')); box.appendChild(lg);
     const W = Math.max(300, box.clientWidth || 600), H = W < 560 ? 240 : 300, m = { l: 46, r: W < 560 ? 64 : 84, t: 12, b: 24 };
     const pw = W - m.l - m.r, ph = H - m.t - m.b, N = times.length;
     const vals = ser.flatMap(x => x.a).filter(v => v != null);
     const vmin = Math.min(...vals), vmax = Math.max(...vals), span = Math.max(1000, vmax - vmin), step = niceStep(span);
     const y0 = Math.floor((vmin - span * .05) / step) * step, y1 = Math.ceil((vmax + span * .05) / step) * step;
     const X = i => m.l + i * pw / (N - 1), Y = v => m.t + ph * (1 - (v - y0) / (y1 - y0));
-    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '곡별 앞으로 24시간 예측 비교' });
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '곡별 지난 숫자와 앞으로 24시간 예측 비교' });
     for (let v = y0; v <= y1 + 1e-6; v += step) { el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: 'grid' }, svg); txt(svg, m.l - 6, Y(v) + 4, tickLab(v, step), 'tick', 'end'); }
-    times.forEach((t, i) => { const hh = hr(t); if (i > 0 && hh === 0) el('line', { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg);
-      const ev = W < 560 ? 6 : 3;
-      if (i === 0 || (hh % ev === 0 && X(i) - X(0) > 34)) txt(svg, X(i), m.t + ph + 16, i === 0 ? '지금' : (hh === 0 ? (W < 560 ? `${+t.slice(8, 10)}일` : `${+t.slice(8, 10)}일 0시`) : `${hh}시`), 'tick', i === 0 ? 'start' : 'middle'); });
+    const ev = wv ? 24 : (W < 560 ? 12 : 6);                            // 1주일: 날짜만 · 2일: 6(폰 12)시간마다
+    times.forEach((t, i) => { const hh = hr(t);
+      if (i > 0 && hh === 0) el('line', { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg);
+      if (i === N0 || Math.abs(X(i) - X(N0)) < 30 || hh % ev) return;
+      txt(svg, X(i), m.t + ph + 16, hh === 0 ? `${+t.slice(8, 10)}일` : `${hh}시`, 'tick', 'middle'); });
+    el('line', { x1: X(N0), x2: X(N0), y1: m.t, y2: m.t + ph, class: 'dayline' }, svg).style.strokeDasharray = '3 3';
+    txt(svg, X(N0), m.t + ph + 16, '지금', 'tick', 'middle');
+    const path = a => { let d = '', pen = false; a.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; }); return d; };
     const ends = [];
-    ser.forEach(({ s, a }) => {
-      let d = '', pen = false; a.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ' ' + Y(v); pen = true; });
-      const p = el('path', { d, class: 'ln' }, svg); p.style.stroke = col(s); p.style.strokeWidth = 2.4;
-      if (a[0] != null) { const c0 = el('circle', { cx: X(0), cy: Y(a[0]), r: 3.5 }, svg); c0.style.fill = col(s); }
-      const li = a.map((v, i) => v == null ? -1 : i).filter(i => i >= 0).pop();
-      if (li != null) ends.push({ y: Y(a[li]), s, v: a[li] });
+    ser.forEach(({ s, past, fut }) => {
+      const p0 = el('path', { d: path(past), class: 'ln' }, svg); p0.style.stroke = col(s); p0.style.strokeWidth = wv ? 1.3 : 1.6; p0.style.opacity = .42;
+      const p1 = el('path', { d: path(fut), class: 'ln' }, svg); p1.style.stroke = col(s); p1.style.strokeWidth = 2.4;
+      if (fut[N0] != null) { const c0 = el('circle', { cx: X(N0), cy: Y(fut[N0]), r: 3.5 }, svg); c0.style.fill = col(s); }
+      const li = fut.map((v, i) => v == null ? -1 : i).filter(i => i >= 0).pop();
+      if (li != null) ends.push({ y: Y(fut[li]), s, v: fut[li] });
     });
     ends.sort((p, q) => p.y - q.y); for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 14) ends[k].y = ends[k - 1].y + 14;
-    ends.forEach(e => { const t = txt(svg, W - m.r + 6, e.y + 4, (W < 560 ? '' : '') + fmt(e.v), 'note'); t.style.fill = col(e.s); t.style.fontWeight = 600; });
+    ends.forEach(e => { const t = txt(svg, W - m.r + 6, e.y + 4, fmt(e.v), 'note'); t.style.fill = col(e.s); t.style.fontWeight = 600; });
     const cross = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ph, class: 'cross' }, svg);
     const hit = el('rect', { x: m.l, y: m.t, width: pw, height: ph, fill: 'transparent' }, svg);
     box.appendChild(svg);
@@ -470,7 +489,7 @@ function render(D) {
       const r = svg.getBoundingClientRect(), sx = W / r.width, x = (ev.clientX - r.left) * sx;
       const i = Math.max(0, Math.min(N - 1, Math.round((x - m.l) / (pw / (N - 1)))));
       cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.style.opacity = 1;
-      tip.replaceChildren(h('div', 'hd', i === 0 ? `지금 (${lab(times[0])})` : `${lab(times[i])} 예측`));
+      tip.replaceChildren(h('div', 'hd', i === N0 ? `지금 (${lab(times[i])})` : i > N0 ? `${lab(times[i])} 예측` : `${lab(times[i])} 실제`));
       ser.slice().sort((p, q) => (q.a[i] ?? -1) - (p.a[i] ?? -1)).forEach(({ s, a }) => { const row = h('div', 'or'); const d = h('i'); d.style.background = col(s);
         row.append(d, h('span', null, s.title), h('b', null, a[i] != null ? fmt(a[i]) : '–')); tip.appendChild(row); });
       const bx = box.getBoundingClientRect(), px = X(i) / sx + (r.left - bx.left);
@@ -480,9 +499,9 @@ function render(D) {
     hit.addEventListener('pointerleave', ev => { if (ev.pointerType !== 'touch') { tip.classList.remove('show'); cross.style.opacity = 0; } });
     allHide = () => { tip.classList.remove('show'); cross.style.opacity = 0; };
   }
-  let allHide = () => {};
-  const hideTips = () => { allHide(); charts.forEach(o => { if (o.cross) o.cross.style.opacity = 0; o.tip.classList.remove('show'); }); };
-  on(document, 'pointerdown', e => { if (!(e.target.closest && e.target.closest('.chart'))) hideTips(); });
+  let allHide = () => {}, nowHide = () => {};
+  const hideTips = () => { allHide(); nowHide(); charts.forEach(o => { if (o.cross) o.cross.style.opacity = 0; o.tip.classList.remove('show'); }); };
+  on(document, 'pointerdown', e => { if (!(e.target.closest && e.target.closest('.chart, .allc, #nowG'))) hideTips(); });
   function draw() {
     charts.forEach(c => { const { s, ch, tip } = c;
       ch.querySelector('svg')?.remove();
@@ -629,28 +648,65 @@ function render(D) {
       [r.d10, r.d60].forEach(v => tr.appendChild(h('td', cl(v), sgn(v))));
       tb.appendChild(tr);
     });
-    const ids = Object.keys(NW.series).filter(id => NW.series[id].some(v => v != null));
-    const i0 = ids.length ? Math.min(...ids.map(id => NW.series[id].findIndex(v => v != null))) : 0;
-    const N = NW.times.length - i0;
     const gbox = document.getElementById('nowG');
-    if (ids.length && N >= 3) {
-      const all = ids.flatMap(id => NW.series[id].slice(i0)).filter(v => v != null);
+    const NX = D.nowx;
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+    const tT = new Date(NW.t.replace(' ', 'T') + ':00Z');
+    const ids = Object.keys(NW.series);
+    let nowV = 'd'; try { if (localStorage.getItem('melonNowSpan') === 'w') nowV = 'w'; } catch (e) {}
+    const seg = h('div', 'seg nseg');
+    [['d', '하루'], ['w', '1주일']].forEach(([v, s]) => { const b = h('button', null, s); b.type = 'button'; b.dataset.v = v; seg.appendChild(b); });
+    gbox.before(seg);
+    const view = () => {
+      if (nowV === 'w') {                                             // 1주일: 1시간 평균
+        if (!NX || !NX.wk) return null;
+        return { w: true, times: NX.wk.times, series: Object.fromEntries(ids.map(id => [id, (NX.wk.series[id] || []).slice()])) };
+      }
+      const times = []; for (let i = 144; i >= 0; i--) times.push(stamp(new Date(tT - i * 600e3)));   // 하루: 10분 칸
+      const ix = {}; times.forEach((t, i) => { ix[t] = i; });
+      const series = {};
+      ids.forEach(id => {
+        const a = times.map(() => null);
+        if (NX && NX.day && NX.day.series[id]) NX.day.times.forEach((t, i) => { if (ix[t] != null && NX.day.series[id][i] != null) a[ix[t]] = NX.day.series[id][i]; });
+        const n = NW.times.length;                                     // Worker 쪽 최근 숫자가 더 새것
+        NW.series[id].forEach((v, i) => { const t = stamp(new Date(tT - (n - 1 - i) * 600e3)); if (v != null && ix[t] != null) a[ix[t]] = v; });
+        series[id] = a;
+      });
+      return { w: false, times, series };
+    };
+    const drawNow = () => {
+      seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === nowV)));
+      gbox.replaceChildren();
+      const V = view();
+      const vis = V ? ids.filter(id => V.series[id] && V.series[id].some(v => v != null)) : [];
+      const i0 = vis.length ? Math.min(...vis.map(id => V.series[id].findIndex(v => v != null))) : 0;
+      const N = V ? V.times.length - i0 : 0;
+      if (!vis.length || N < 3) { gbox.appendChild(h('p', 'sub', nowV === 'w' ? '1주일 그래프는 숫자가 몇 시간 쌓이면 보여요.' : '그래프는 숫자가 30분 넘게 쌓이면 보여요.')); return; }
+      const all = vis.flatMap(id => V.series[id].slice(i0)).filter(v => v != null);
       let lo = Math.min(...all), hi = Math.max(...all); const pd = (hi - lo) * 0.12 || 300; lo = Math.max(0, lo - pd); hi += pd;
       const W = Math.max(320, Math.min(760, gbox.clientWidth || 360)), H = W < 500 ? 200 : 230, L = 46, R = 124, T = 10, B = 22;
       const X = i => L + (W - L - R) * (i - i0) / (N - 1), Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
-      const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '곡별 지금 듣는 사람 수, 최근 흐름' });
+      const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `곡별 지금 듣는 사람 수, 지난 ${V.w ? '1주일' : '하루'}` });
       const st = niceStep(hi - lo);
       for (let v = Math.ceil(lo / st) * st; v <= hi; v += st) {
         el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'var(--grid)', 'stroke-width': 1 }, svg);
         txt(svg, L - 5, Y(v) + 4, fmt(v), null, 'end');
       }
-      const every = N > 36 ? 3 : 1;
-      NW.times.forEach((t, i) => { if (i >= i0 && t.endsWith(':00') && +t.slice(0, 2) % every === 0) txt(svg, X(i), H - 6, +t.slice(0, 2) + '시', null, 'middle'); });
+      const hrOf = t => +t.slice(11, 13), isHour = t => V.w || t.endsWith(':00');
+      const span = N / (V.w ? 1 : 6), every = V.w ? 24 : span > 14 ? (W < 500 ? 6 : 3) : span > 6 ? 2 : 1;
+      let lastX = -99;
+      V.times.forEach((t, i) => {
+        if (i < i0 || !isHour(t)) return; const hh = hrOf(t);
+        if (hh === 0 && i > i0) el('line', { x1: X(i), x2: X(i), y1: T, y2: H - B, stroke: 'var(--grid)', 'stroke-dasharray': '2 3' }, svg);
+        if (hh % every || X(i) - lastX < 30) return;
+        txt(svg, X(i), H - 6, hh === 0 ? `${+t.slice(8, 10)}일` : hh + '시', null, 'middle'); lastX = X(i);
+      });
       const ends = [];
-      ids.forEach(id => {
-        const a = NW.series[id]; let d = '', pen = false;
+      vis.forEach(id => {
+        const a = V.series[id]; let d = '', pen = false;
         a.forEach((v, i) => { if (i < i0 || v == null) { pen = false; return; } d += (pen ? ' L' : ' M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; });
-        el('path', { d: d.trim(), fill: 'none', stroke: colOf[id], 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+        el('path', { d: d.trim(), fill: 'none', stroke: colOf[id], 'stroke-width': V.w ? 1.7 : 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
         const li = a.map((v, i) => v == null ? -1 : i).filter(i => i >= 0).pop();
         el('circle', { cx: X(li), cy: Y(a[li]), r: 3, fill: colOf[id] }, svg);
         const r = NW.rows.find(x => x.id === id), nm = short(r ? r.title : '');
@@ -659,10 +715,31 @@ function render(D) {
       ends.sort((a, b) => a.y - b.y);
       for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 13) ends[k].y = ends[k - 1].y + 13;
       ends.forEach(e => txt(svg, W - R + 6, e.y + 4, e.s).setAttribute('style', 'fill: var(--ink-2)'));
+      const cross = el('line', { x1: 0, x2: 0, y1: T, y2: H - B, class: 'cross' }, svg);
+      const hit = el('rect', { x: L, y: T, width: W - L - R, height: H - T - B, fill: 'transparent' }, svg);
       gbox.appendChild(svg);
-    } else {
-      gbox.appendChild(h('p', 'sub', '그래프는 숫자가 30분 넘게 쌓이면 보여요.'));
-    }
+      const tip = h('div', 'tip'); gbox.appendChild(tip);
+      const tlab = t => { const d = `${+t.slice(5, 7)}/${+t.slice(8, 10)}`, hh = hrOf(t);
+        return V.w ? `${d} ${hh}시 (1시간 평균)` : `${t.slice(0, 10) === NW.t.slice(0, 10) ? '' : d + ' '}${hh}시${+t.slice(14, 16) ? ' ' + +t.slice(14, 16) + '분' : ''}`; };
+      const show = ev => {
+        const rc = svg.getBoundingClientRect(), sx = W / rc.width, x = (ev.clientX - rc.left) * sx;
+        const i = Math.max(i0, Math.min(V.times.length - 1, Math.round(i0 + (x - L) / ((W - L - R) / (N - 1)))));
+        cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.style.opacity = 1;
+        tip.replaceChildren(h('div', 'hd', tlab(V.times[i])));
+        vis.slice().sort((p, q) => (V.series[q][i] ?? -1) - (V.series[p][i] ?? -1)).forEach(id => {
+          const row = h('div', 'or'), dd = h('i'); dd.style.background = colOf[id];
+          const r = NW.rows.find(x => x.id === id);
+          row.append(dd, h('span', null, short(r ? r.title : '')), h('b', null, V.series[id][i] != null ? fmt(V.series[id][i]) + '명' : '–')); tip.appendChild(row); });
+        const gx = gbox.getBoundingClientRect(), px = X(i) / sx + (rc.left - gx.left);
+        tip.style.left = Math.min(Math.max(0, px + 12), gx.width - 190) + 'px'; tip.style.top = '8px'; tip.classList.add('show');
+      };
+      hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show);
+      hit.addEventListener('pointerleave', ev => { if (ev.pointerType !== 'touch') { tip.classList.remove('show'); cross.style.opacity = 0; } });
+      nowHide = () => { tip.classList.remove('show'); cross.style.opacity = 0; };
+    };
+    seg.addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === nowV) return;
+      nowV = b.dataset.v; try { localStorage.setItem('melonNowSpan', nowV); } catch (e2) {} drawNow(); });
+    drawNow();
   } catch (e) { /* 안 그려져도 페이지는 그대로 */ }
   /* 맨 아래 참고 지표(With · 백화요란) */
   const RF = D.ref || [], rfe = document.getElementById('refm');
