@@ -201,6 +201,10 @@ svg .ln.gs { stroke-dasharray: 2 3; stroke-width: 1.8; opacity: .8; }
 .allc .lg .nt { color: var(--muted); font-size: 11.5px; }
 #nowG { position: relative; }
 .nseg { margin: 2px 0 6px; }
+.nchips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 4px; }
+.nchips .chip { font: inherit; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; }
+.nchips .chip i { width: 9px; height: 9px; border-radius: 50%; border: 2px solid; box-sizing: border-box; }
+.nchips .chip[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; }
 .allc svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
 .refm { color: var(--muted); font-size: 11.5px; line-height: 1.6; margin: 18px 2px 0; }
 .refm div + div { margin-top: 2px; }
@@ -668,7 +672,7 @@ function render(D) {
     const cl = n => n == null || n === 0 ? null : n > 0 ? 'up' : 'down';
     NW.rows.forEach(r => {
       const tr = h('tr'), c0 = h('td');
-      const dt = h('i', 'dot'); dt.style.background = NW.series[r.id] ? colOf[r.id] : 'transparent'; c0.appendChild(dt);
+      const dt = h('i', 'dot'); dt.style.background = colOf[r.id]; c0.appendChild(dt);
       c0.appendChild(document.createTextNode(short(r.title))); c0.appendChild(h('span', 'art', short(r.artist)));
       tr.appendChild(c0);
       const c1 = h('td'); c1.appendChild(h('b', null, fmt(r.now) + '명')); tr.appendChild(c1);
@@ -681,11 +685,15 @@ function render(D) {
     const pad = n => String(n).padStart(2, '0');
     const stamp = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
     const tT = new Date(NW.t.replace(' ', 'T') + ':00Z');
-    const ids = Object.keys(NW.series);
+    const ids = NW.rows.map(r => r.id);
+    let hide; try { hide = JSON.parse(localStorage.getItem('melonNowHide') || 'null'); } catch (e) { hide = null; }
+    const hid = new Set(Array.isArray(hide) ? hide : ids.slice(5));          // 처음엔 위 5곡만 보이게
+    const chips = h('div', 'nchips');
+    gbox.before(chips);
     let nowV = 'd'; try { if (localStorage.getItem('melonNowSpan') === 'w') nowV = 'w'; } catch (e) {}
     const seg = h('div', 'seg nseg');
     [['d', '하루'], ['w', '1주일']].forEach(([v, s]) => { const b = h('button', null, s); b.type = 'button'; b.dataset.v = v; seg.appendChild(b); });
-    gbox.before(seg);
+    chips.before(seg);
     const view = () => {
       if (nowV === 'w') {                                             // 1주일: 1시간 평균
         if (!NX || !NX.wk) return null;
@@ -697,8 +705,8 @@ function render(D) {
       ids.forEach(id => {
         const a = times.map(() => null);
         if (NX && NX.day && NX.day.series[id]) NX.day.times.forEach((t, i) => { if (ix[t] != null && NX.day.series[id][i] != null) a[ix[t]] = NX.day.series[id][i]; });
-        const n = NW.times.length;                                     // Worker 쪽 최근 숫자가 더 새것
-        NW.series[id].forEach((v, i) => { const t = stamp(new Date(tT - (n - 1 - i) * 600e3)); if (v != null && ix[t] != null) a[ix[t]] = v; });
+        const n = (NW.series[id] || []).length;                      // Worker 쪽 최근 숫자가 더 새것
+        (NW.series[id] || []).forEach((v, i) => { const t = stamp(new Date(tT - (n - 1 - i) * 600e3)); if (v != null && ix[t] != null) a[ix[t]] = v; });
         series[id] = a;
       });
       return { w: false, times, series };
@@ -707,13 +715,23 @@ function render(D) {
       seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === nowV)));
       gbox.replaceChildren();
       const V = view();
-      const vis = V ? ids.filter(id => V.series[id] && V.series[id].some(v => v != null)) : [];
+      const has = V ? ids.filter(id => V.series[id] && V.series[id].some(v => v != null)) : [];
+      chips.replaceChildren(...has.map(id => {
+        const r = NW.rows.find(x => x.id === id), b = h('button', 'chip'); b.type = 'button';
+        const on = !hid.has(id); b.setAttribute('aria-pressed', String(on));
+        const d = h('i'); d.style.background = on ? colOf[id] : 'transparent'; d.style.borderColor = colOf[id];
+        b.append(d, document.createTextNode(short(r ? r.title : '')));
+        b.addEventListener('click', () => { hid.has(id) ? hid.delete(id) : hid.add(id);
+          try { localStorage.setItem('melonNowHide', JSON.stringify([...hid])); } catch (e) {} drawNow(); });
+        return b; }));
+      const vis = has.filter(id => !hid.has(id));
       const i0 = vis.length ? Math.min(...vis.map(id => V.series[id].findIndex(v => v != null))) : 0;
       const N = V ? V.times.length - i0 : 0;
+      if (has.length && !vis.length) { gbox.appendChild(h('p', 'sub', '위 곡 이름을 눌러 그래프에 보일 곡을 고르세요.')); return; }
       if (!vis.length || N < 3) { gbox.appendChild(h('p', 'sub', nowV === 'w' ? '1주일 그래프는 숫자가 몇 시간 쌓이면 보여요.' : '그래프는 숫자가 30분 넘게 쌓이면 보여요.')); return; }
       const all = vis.flatMap(id => V.series[id].slice(i0)).filter(v => v != null);
       let lo = Math.min(...all), hi = Math.max(...all); const pd = (hi - lo) * 0.12 || 300; lo = Math.max(0, lo - pd); hi += pd;
-      const W = Math.max(320, Math.min(760, gbox.clientWidth || 360)), H = W < 500 ? 200 : 230, L = 46, R = 124, T = 10, B = 22;
+      const W = Math.max(320, Math.min(860, gbox.clientWidth || 360)), H = W < 500 ? 210 : 240, L = 46, R = 12, T = 10, B = 22;
       const X = i => L + (W - L - R) * (i - i0) / (N - 1), Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
       const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `곡별 지금 듣는 사람 수, 지난 ${V.w ? '1주일' : '하루'}` });
       const st = niceStep(hi - lo);
@@ -730,19 +748,13 @@ function render(D) {
         if (hh % every || X(i) - lastX < 30) return;
         txt(svg, X(i), H - 6, hh === 0 ? `${+t.slice(8, 10)}일` : hh + '시', null, 'middle'); lastX = X(i);
       });
-      const ends = [];
       vis.forEach(id => {
         const a = V.series[id]; let d = '', pen = false;
         a.forEach((v, i) => { if (i < i0 || v == null) { pen = false; return; } d += (pen ? ' L' : ' M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; });
         el('path', { d: d.trim(), fill: 'none', stroke: colOf[id], 'stroke-width': V.w ? 1.7 : 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
         const li = a.map((v, i) => v == null ? -1 : i).filter(i => i >= 0).pop();
         el('circle', { cx: X(li), cy: Y(a[li]), r: 3, fill: colOf[id] }, svg);
-        const r = NW.rows.find(x => x.id === id), nm = short(r ? r.title : '');
-        ends.push({ y: Y(a[li]), s: `${nm.length > 7 ? nm.slice(0, 6) + '…' : nm} ${fmt(a[li])}` });
       });
-      ends.sort((a, b) => a.y - b.y);
-      for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 13) ends[k].y = ends[k - 1].y + 13;
-      ends.forEach(e => txt(svg, W - R + 6, e.y + 4, e.s).setAttribute('style', 'fill: var(--ink-2)'));
       const cross = el('line', { x1: 0, x2: 0, y1: T, y2: H - B, class: 'cross' }, svg);
       const hit = el('rect', { x: L, y: T, width: W - L - R, height: H - T - B, fill: 'transparent' }, svg);
       gbox.appendChild(svg);
